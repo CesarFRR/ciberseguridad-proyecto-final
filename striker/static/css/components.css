@@ -36,7 +36,7 @@
 .element-tag { color:var(--accent-light); font-family:var(--font-mono); font-size:9px; }
 .element-detail { color:var(--text-secondary); font-size:9px; word-break:break-all; margin-top:1px; }
 
-.result-card { cursor:pointer; } .result-card:hover { filter:brightness(1.15); }
+.result-card { cursor:pointer; display:block; overflow:hidden; } .result-card:hover { filter:brightness(1.15); }
 .result-sev { font-size:8px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:2px; }
 .result-detail { color:var(--text-secondary); font-size:9px; }
 

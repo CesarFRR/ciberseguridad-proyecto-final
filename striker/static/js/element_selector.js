@@ -264,20 +264,25 @@
   function loadExternalElements(elements) {
     STATE.targets = [];
     elements.forEach(info => {
-      // Find the actual DOM element by selector
       try {
         const el = document.querySelector(info.selector);
         if (el) {
           STATE.targets.push({ el, info });
         } else {
-          // Store info only, no DOM reference
-          STATE.targets.push({ el: null, info });
+          // Crear un elemento fantasma para representarlo
+          const ghost = document.createElement('span');
+          ghost.style.display = 'none';
+          ghost.__striker_info = info;
+          document.body.appendChild(ghost);
+          STATE.targets.push({ el: ghost, info });
         }
       } catch (_) {
         STATE.targets.push({ el: null, info });
       }
     });
     notify();
+    // Auto-poner en modo SELECT para ver las etiquetas
+    setMode(true);
   }
 
   // ── CLEAR ALL ──────────────────────────────────────────────
