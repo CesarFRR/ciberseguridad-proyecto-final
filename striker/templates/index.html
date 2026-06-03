@@ -84,6 +84,7 @@
       <div class="tab-bar">
         <button class="tab active" data-tab="live">Live View</button>
         <button class="tab" data-tab="monitor">📡 Monitor</button>
+        <button class="tab" data-tab="ddos">💣 DDoS</button>
         <button class="tab" data-tab="sessions">Sessions</button>
         <button class="tab tab-elements" data-tab="elements">Elements</button>
       </div>
@@ -130,6 +131,36 @@
         </div>
         <div style="text-align:center;padding:6px;flex-shrink:0">
           <button id="btn-sound" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:4px 14px;border-radius:3px;cursor:pointer;font-size:11px">🔊 Sound ON</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: DDoS -->
+    <div class="tab-content" id="tab-ddos" style="display:none">
+      <div style="display:flex;height:100%;flex-direction:column;overflow:hidden;padding:16px">
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+          <input id="ddos-url" placeholder="http://localhost:5005/ddos/api" style="flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:monospace;font-size:11px">
+          <input id="ddos-threads" value="20" type="number" min="1" max="500" style="width:60px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center" title="Threads">
+          <input id="ddos-duration" value="10" type="number" min="1" max="120" style="width:50px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center" title="Seconds">
+          <button id="btn-ddos-start" class="btn btn-scan" style="padding:8px 16px">💣 START</button>
+          <button id="btn-ddos-stop" class="btn" style="background:var(--danger);color:white;padding:8px 16px;display:none">⏹ STOP</button>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:12px">
+          <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center">
+            <div id="ddos-rps" style="font-size:36px;font-family:monospace;color:var(--accent)">0</div>
+            <div style="font-size:9px;color:var(--text-muted)">Requests/sec</div>
+          </div>
+          <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center">
+            <div id="ddos-total" style="font-size:36px;font-family:monospace;color:var(--green)">0</div>
+            <div style="font-size:9px;color:var(--text-muted)">Total Requests</div>
+          </div>
+          <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center">
+            <div id="ddos-errors" style="font-size:36px;font-family:monospace;color:var(--danger)">0</div>
+            <div style="font-size:9px;color:var(--text-muted)">Errors</div>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;font-family:monospace;font-size:10px;color:var(--text-muted)" id="ddos-log">
+          <div style="text-align:center;padding:40px">Configure URL and click START to simulate DDoS</div>
         </div>
       </div>
     </div>

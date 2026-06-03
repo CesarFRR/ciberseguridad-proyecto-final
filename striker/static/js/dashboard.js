@@ -154,6 +154,48 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(loadSessions, 5000);
   startMonitorSSE();
 
+  // ── DDoS Tab ────────────────────────────────────────────────
+  let ddosInterval = null;
+  $("btn-ddos-start")?.addEventListener("click", async () => {
+    const url = $("ddos-url")?.value?.trim();
+    if (!url) return;
+    const threads = parseInt($("ddos-threads")?.value || "20");
+    const duration = parseInt($("ddos-duration")?.value || "10");
+    try {
+      const r = await fetch("/api/ddos/start", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, threads, duration }),
+      });
+      const d = await r.json();
+      if (d.status === "started") {
+        $("btn-ddos-start").style.display = "none";
+        $("btn-ddos-stop").style.display = "inline-block";
+        $("ddos-log").innerHTML = `<div style="color:var(--amber)">💣 DDoS STARTED — ${threads} threads × ${duration}s → ${url}</div>`;
+        ddosInterval = setInterval(pollDDoS, 1000);
+      }
+    } catch (_) {}
+  });
+  $("btn-ddos-stop")?.addEventListener("click", async () => {
+    await fetch("/api/ddos/stop", { method: "POST" });
+    stopDDoSUI();
+  });
+
+  function stopDDoSUI() {
+    $("btn-ddos-start").style.display = "inline-block";
+    $("btn-ddos-stop").style.display = "none";
+    if (ddosInterval) { clearInterval(ddosInterval); ddosInterval = null; }
+  }
+
+  async function pollDDoS() {
+    try {
+      const r = await fetch("/api/ddos/stats"), d = await r.json();
+      $("ddos-rps").textContent = d.rps || 0;
+      $("ddos-total").textContent = d.total_requests || 0;
+      $("ddos-errors").textContent = d.errors || 0;
+      if (!d.running) stopDDoSUI();
+    } catch (_) {}
+  }
+
   // ── Restore last target ──────────────────────────────────
   try { const last = localStorage.getItem("striker_last_target"); if (last && els.targetUrl) els.targetUrl.value = last; } catch (_) {}
 });

@@ -170,6 +170,41 @@ def api_attacks():
 
 
 # ═══════════════════════════════════════════════════════════════════
+#  DDoS SIMULATION
+# ═══════════════════════════════════════════════════════════════════
+
+@dashboard_bp.route("/api/ddos/start", methods=["POST"])
+def api_ddos_start():
+    """Inicia simulación DDoS."""
+    from scanner.ddos import ddos_engine
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url", "")
+    threads = int(data.get("threads", 10))
+    duration = int(data.get("duration", 10))
+
+    if not url:
+        return jsonify({"error": "url required"}), 400
+
+    result = ddos_engine.start(url, threads=threads, duration=duration)
+    return jsonify(result)
+
+
+@dashboard_bp.route("/api/ddos/stop", methods=["POST"])
+def api_ddos_stop():
+    """Detiene simulación DDoS."""
+    from scanner.ddos import ddos_engine
+    ddos_engine.stop()
+    return jsonify({"status": "stopped"})
+
+
+@dashboard_bp.route("/api/ddos/stats")
+def api_ddos_stats():
+    """Estadísticas del DDoS en curso."""
+    from scanner.ddos import ddos_engine
+    return jsonify(ddos_engine.get_stats())
+
+
+# ═══════════════════════════════════════════════════════════════════
 #  SENSORES (live attack monitoring)
 # ═══════════════════════════════════════════════════════════════════
 
