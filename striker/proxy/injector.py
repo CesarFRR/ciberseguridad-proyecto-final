@@ -11,27 +11,40 @@ from flask import Response, request as flask_request
 HTML_TYPES = {"text/html", "application/xhtml+xml"}
 
 INJECT_SCRIPT = """
-<!-- ▸▸▸ STRIKER Element Selector ▸▸▸ -->
+<!-- ▸▸▸ STRIKER Navigation + Fetch Interceptor ▸▸▸ -->
 <script>
 (function(){
   var TARGET=new URLSearchParams(window.location.search).get('target')||'';
   if(TARGET){
+    // Intercept fetch/XHR
     var _fetch=window.fetch;
     window.fetch=function(url,opts){
-      if(typeof url==='string'&&url.startsWith('/')){
-        var sep=url.includes('?')?'&':'?';
+      if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('/proxy')&&!url.startsWith('/__striker__')){
         url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
       }
       return _fetch.call(this,url,opts);
     };
     var _open=XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open=function(method,url){
-      if(typeof url==='string'&&url.startsWith('/')){
-        var sep=url.includes('?')?'&':'?';
+      if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('/proxy')&&!url.startsWith('/__striker__')){
         url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
       }
       return _open.call(this,method,url);
     };
+
+    // Notify parent of navigation
+    function notifyNav(){
+      var p=new URLSearchParams(window.location.search);
+      var path=p.get('path')||'/';
+      window.parent&&window.parent.postMessage({type:'nav_update',base:TARGET,path:path},'*');
+    }
+    // Override history API for SPAs
+    var _push=history.pushState;history.pushState=function(){_push.apply(this,arguments);notifyNav()};
+    var _replace=history.replaceState;history.replaceState=function(){_replace.apply(this,arguments);notifyNav()};
+    window.addEventListener('popstate',notifyNav);
+    // Notify on load
+    window.addEventListener('load',notifyNav);
+    notifyNav();
   }
 })();
 </script>

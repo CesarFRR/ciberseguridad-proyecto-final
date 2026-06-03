@@ -200,12 +200,12 @@ function handleIframeMsg(e) {
   }
 
   if (d.type === "scan_complete") {
-    // Re-enable SCAN button
-    if (els.btnScan) { els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false; }
-    if (els.systemText) { els.systemText.textContent = (d.count || 0) > 0 ? "VULNERABLE" : "CLEAN"; }
-    if (els.systemDot) {
-      els.systemDot.className = (d.count || 0) > 0 ? "status-dot red" : "status-dot green";
-    }
+    ...
+  }
+
+  if (d.type === "nav_update") {
+    if (d.base) updateNavUrl(d.base, d.path || "/");
+  }
     renderResults(d.results || []);
     loadSessions();
   }
