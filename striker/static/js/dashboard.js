@@ -171,14 +171,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const count = d.count || 0;
       const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
       if (count > 0) {
+        const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
         const html = `<div class="sidebar-title" style="margin-bottom:6px">🔍 SAST: ${count} vulns in ${path}</div>` +
           (d.findings || []).slice(0, 15).map(f =>
-            `<div class="card" style="border-left:3px solid ${sev[f.severity]||'#3b82f6'};margin-bottom:6px;overflow:hidden">
-              <div style="font-size:9px;font-weight:700;color:${sev[f.severity]||'#3b82f6'};text-transform:uppercase;margin-bottom:2px">${(f.severity||'?').toUpperCase()} · ${f.category}</div>
-              <div style="font-family:monospace;font-size:9px;color:var(--accent)">📄 ${(f.file||'').split('/').pop()}:${f.line}</div>
-              <div style="font-size:9px;color:var(--text-muted);margin-top:2px;word-break:break-all">${(f.code||'').slice(0, 100)}</div>
-              ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:3px;padding-top:3px;border-top:1px solid var(--border)">💡 ${f.fix.slice(0, 100)}</div>` : ''}
+            `<div class="card" style="border-left:3px solid ${sev[f.severity]||'#3b82f6'};margin-bottom:6px">
+              <div style="font-size:9px;font-weight:700;color:${sev[f.severity]||'#3b82f6'};text-transform:uppercase;margin-bottom:2px">${esc(f.severity||'?').toUpperCase()} · ${esc(f.category)}</div>
+              <div style="font-family:monospace;font-size:9px;color:var(--accent)">📄 ${esc((f.file||'').split('/').pop())}:${f.line}</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:2px;word-break:break-all;white-space:pre-wrap">${esc((f.code||'').slice(0, 120))}</div>
+              ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:3px;padding-top:3px;border-top:1px solid var(--border)">💡 ${esc(f.fix.slice(0, 120))}</div>` : ''}
             </div>`
           ).join("");
         if (els.resultsList) els.resultsList.innerHTML = html;
