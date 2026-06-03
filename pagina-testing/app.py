@@ -328,14 +328,14 @@ a.back{color:var(--accent);font-size:11px;display:block;text-align:center;margin
   <div class="box">
     <h3>① Search (Reflected)</h3>
     <span class="technique">Reflected XSS</span>
-    <form method="GET" action="/xss">
-      <input type="text" name="search" placeholder="Search...">
+    <form method="GET">
+      <input type="text" name="q" placeholder="Search something...">
       <button type="submit">Search</button>
     </form>
-    {% if search %}<div class="result">{{ search | safe }}</div>{% endif %}
+    {% if query %}<div class="result">Results for: {{ query | safe }}</div>{% endif %}
     <p class="hint">💡 <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> o <code>&lt;img src=x onerror=alert(1)&gt;</code></p>
     <span class="show-code" onclick="this.nextElementSibling.style.display='block'">▼ Show code</span>
-    <pre>results.innerHTML = "{{ search }}"; // sin escape</pre>
+    <pre>results.innerHTML = "{{ query }}"; // sin escape</pre>
   </div>
 
   <!-- 2. Stored XSS -->
@@ -447,7 +447,7 @@ a.back{color:var(--accent);font-size:11px;display:block;text-align:center;margin
 
 @app.route("/xss", methods=["GET", "POST"])
 def xss_all():
-    search = request.args.get("search", "")
+    query = request.args.get("q", "")
     timer = request.args.get("timer", "")
     timer_msg = ""
     if request.args.get("start"):
@@ -457,7 +457,7 @@ def xss_all():
         COMMENTS.append({"name": request.form.get("cname", "Anon"), "msg": request.form.get("cmsg", "")})
     return render_template_string(
         XSS_FINAL_HTML,
-        search=search,
+        query=query,
         comments=COMMENTS,
         timer=timer,
         timer_msg=timer_msg,
