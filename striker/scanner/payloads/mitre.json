@@ -1,0 +1,104 @@
+{
+  "source": "MITRE ATT&CK v15",
+  "url": "https://attack.mitre.org",
+  "mappings": {
+    "SQL Injection": {
+      "mitre_id": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-89",
+      "cwe_name": "Improper Neutralization of Special Elements used in an SQL Command",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante explota una vulnerabilidad SQLi en una aplicación web pública para acceder o manipular la base de datos."
+    },
+    "NoSQL Injection": {
+      "mitre_id": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-943",
+      "cwe_name": "Improper Neutralization of Special Elements in Data Query Logic",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "Inyección en bases de datos NoSQL (MongoDB, etc.) usando operadores como $gt, $ne, $where."
+    },
+    "Cross-Site Scripting (XSS)": {
+      "mitre_id": "T1059.007",
+      "mitre_name": "JavaScript",
+      "tactic": "Execution",
+      "cwe": "CWE-79",
+      "cwe_name": "Improper Neutralization of Input During Web Page Generation",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante inyecta JavaScript malicioso que se ejecuta en el navegador de la víctima."
+    },
+    "Command Injection": {
+      "mitre_id": "T1059.004",
+      "mitre_name": "Unix Shell",
+      "tactic": "Execution",
+      "cwe": "CWE-77",
+      "cwe_name": "Improper Neutralization of Special Elements used in a Command",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante inyecta comandos del sistema operativo que son ejecutados por el servidor."
+    },
+    "Path Traversal": {
+      "mitre_id": "T1005",
+      "mitre_name": "Data from Local System",
+      "tactic": "Collection",
+      "cwe": "CWE-22",
+      "cwe_name": "Improper Limitation of a Pathname to a Restricted Directory",
+      "owasp": "A01",
+      "owasp_name": "Broken Access Control",
+      "description": "El atacante accede a archivos fuera del directorio web usando rutas relativas (../../etc/passwd)."
+    },
+    "File Inclusion (LFI/RFI)": {
+      "mitre_id": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-98",
+      "cwe_name": "Improper Control of Filename for Include/Require Statement",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante incluye archivos locales o remotos para ejecutar código arbitrario."
+    },
+    "Scanner / Recon": {
+      "mitre_id": "T1595",
+      "mitre_name": "Active Scanning",
+      "tactic": "Reconnaissance",
+      "cwe": null,
+      "cwe_name": null,
+      "owasp": "A05",
+      "owasp_name": "Security Misconfiguration",
+      "description": "El atacante escanea activamente la aplicación en busca de endpoints vulnerables, archivos sensibles o configuraciones expuestas."
+    },
+    "Brute Force": {
+      "mitre_id": "T1110",
+      "mitre_name": "Brute Force",
+      "tactic": "Credential Access",
+      "cwe": "CWE-307",
+      "cwe_name": "Improper Restriction of Excessive Authentication Attempts",
+      "owasp": "A07",
+      "owasp_name": "Identification and Authentication Failures",
+      "description": "El atacante prueba múltiples combinaciones de credenciales para obtener acceso no autorizado."
+    },
+    "HTTP Anomaly": {
+      "mitre_id": "T1048.003",
+      "mitre_name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+      "tactic": "Exfiltration",
+      "cwe": "CWE-319",
+      "cwe_name": "Cleartext Transmission of Sensitive Information",
+      "owasp": "A02",
+      "owasp_name": "Cryptographic Failures",
+      "description": "Se detectan patrones anómalos en requests HTTP que pueden indicar exfiltración de datos o evasión."
+    }
+  },
+  "tactics_used": [
+    {"id": "TA0001", "name": "Initial Access"},
+    {"id": "TA0002", "name": "Execution"},
+    {"id": "TA0006", "name": "Credential Access"},
+    {"id": "TA0009", "name": "Collection"},
+    {"id": "TA0010", "name": "Exfiltration"},
+    {"id": "TA0043", "name": "Reconnaissance"}
+  ]
+}

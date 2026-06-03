@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Striker · DAST Scanner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ═══ TOP BAR ═══ -->
+<header class="topbar">
+  <button id="menu-toggle" class="menu-toggle" title="Menu">☰</button>
+  <div class="brand-group">
+    <div class="brand-icon">◈</div>
+    <span class="brand-name">Striker</span>
+    <span class="brand-subtitle">DAST Scanner</span>
+  </div>
+  <div class="status-bar">
+    <span id="system-dot" class="status-dot green"></span>
+    <span id="system-text" class="status-text">READY</span>
+    <span class="status-pill">:{{ port }}</span>
+    <span id="time-display" class="status-time">--:--:--</span>
+  </div>
+</header>
+
+<!-- ═══ HELP MODAL ═══ -->
+<div id="help-modal" class="help-modal" style="display:none">
+  <div class="help-content">
+    <span class="help-close">&times;</span>
+    <h3>How to Use Striker</h3>
+    <ol>
+      <li><strong>Paste</strong> a target URL and click <strong>LOAD</strong></li>
+      <li>Click <strong>SELECT MODE</strong> (or press F2 on target)</li>
+      <li><strong>Hover</strong> elements — they highlight in blue</li>
+      <li><strong>Click</strong> to select inputs, buttons, forms</li>
+      <li>Click <strong>SCAN</strong> to run vulnerability tests</li>
+      <li>Results appear here in the dashboard</li>
+      <li>Examples: <code>http://localhost:5000</code> <br> <code>http://localhost:8080</code> <br><code>http://localhost:5050</code> <br><code>http://localhost:3000</code> <br><code>http://localhost:8000</code></li>
+    </ol>
+  </div>
+</div>
+
+<!-- ═══ MAIN GRID ═══ -->
+<div class="main-grid">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Target -->
+    <div class="sidebar-title" style="display:flex;align-items:center;gap:4px;">
+      <span>Target</span>
+      <button id="help-btn" class="help-inline" title="How to use">?</button>
+    </div>
+    <div class="target-row">
+      <input type="text" id="target-url" class="target-input"
+             placeholder="http://localhost:5000">
+      <button id="btn-load" class="btn btn-primary">▸ LOAD</button>
+    </div>
+
+    <!-- Controls -->
+    <div class="sidebar-title" style="margin-top:14px">Controls</div>
+    <div class="controls-row">
+      <button id="btn-select-mode" class="btn btn-select">☗ SELECT MODE</button>
+      <button id="btn-scan" class="btn btn-scan" disabled>▶ SCAN</button>
+      <button id="btn-clear-sel" class="btn btn-clear-sel" style="display:none">✕ Clear selection</button>
+    </div>
+
+    <!-- Sessions list -->
+    <div class="sidebar-title" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
+      <span>Sessions</span>
+      <button id="btn-clear-sessions" class="btn-clear" title="Clear all sessions">🗑</button>
+    </div>
+    <div id="sessions-list" class="sessions-list">
+      <div class="sessions-empty">No sessions yet.</div>
+    </div>
+  </aside>
+
+  <!-- CENTER: Tabs + content -->
+  <main class="content">
+    <div class="content-header">
+      <div class="tab-bar">
+        <button class="tab active" data-tab="live">Live View</button>
+        <button class="tab" data-tab="sessions">Sessions</button>
+        <button class="tab tab-elements" data-tab="elements">Elements</button>
+      </div>
+    </div>
+
+    <!-- Tab: Live -->
+    <div class="tab-content active" id="tab-live">
+      <!-- Nav bar for iframe -->
+      <div class="iframe-nav" id="iframe-nav">
+        <button id="nav-back" class="nav-btn" title="Back">←</button>
+        <button id="nav-fwd" class="nav-btn" title="Forward">→</button>
+        <button id="nav-reload" class="nav-btn" title="Reload">↻</button>
+        <input id="nav-url" class="nav-url" placeholder="Page URL" spellcheck="false">
+      </div>
+      <div class="iframe-container">
+        <div class="iframe-placeholder" id="iframe-placeholder">
+          <div class="placeholder-icon">◈</div>
+          <div class="placeholder-title">Striker DAST</div>
+          <div class="placeholder-text">
+            Enter a target URL and click <strong>LOAD</strong>.<br>
+            The page will load here with Striker controls.
+          </div>
+        </div>
+        <iframe id="target-frame" src="" style="display:none"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+      </div>
+    </div>
+
+    <!-- Tab: Sessions -->
+    <div class="tab-content" id="tab-sessions" style="display:none">
+      <div id="sessions-table" class="sessions-table">
+        <div class="sessions-empty-large">No scan sessions yet.</div>
+      </div>
+    </div>
+
+    <!-- Tab: Elements (mobile-friendly right panel) -->
+    <div class="tab-content" id="tab-elements" style="display:none">
+      <div class="tab-elements-grid">
+        <div class="tab-elem-box">
+          <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>Selected Elements</span>
+            <span id="selection-count-tab" class="sel-count">0</span>
+          </div>
+          <div id="elements-list-tab">
+            <div class="elements-empty">Use SELECT MODE on the target page to pick elements.</div>
+          </div>
+        </div>
+        <div class="tab-elem-box">
+          <div class="panel-title">Scan Results</div>
+          <div id="results-list-tab">
+            <div class="elements-empty">Run a scan to see results.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL: Selected Elements -->
+  <aside class="right-panel">
+    <div class="panel-section">
+      <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Selected Elements</span>
+        <span id="selection-count" class="sel-count">0</span>
+      </div>
+      <div id="elements-list">
+        <div class="elements-empty">Use SELECT MODE on the target page to pick elements.</div>
+      </div>
+    </div>
+
+    <!-- Scan Results -->
+    <div class="panel-section" style="margin-top:16px">
+      <div class="panel-title">Scan Results</div>
+      <div id="results-list">
+        <div class="elements-empty">Run a scan to see results.</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<!-- ═══ VULN DETAIL MODAL ═══ -->
+<div id="detail-modal" class="detail-modal" style="display:none">
+  <div class="detail-content">
+    <div class="detail-hdr">
+      <span id="detail-sev"></span>
+      <span id="detail-type"></span>
+      <span id="detail-close" style="margin-left:auto;cursor:pointer;font-size:18px">&times;</span>
+    </div>
+    <div class="detail-body">
+      <div><b>Element:</b> <span id="detail-element"></span></div>
+      <div><b>Evidence:</b> <span id="detail-evidence"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;background:var(--bg-card);padding:10px;border-radius:4px">
+        <div><small>MITRE</small><br><span id="detail-mitre"></span></div>
+        <div><small>Tactic</small><br><span id="detail-tactic"></span></div>
+        <div><small>CWE</small><br><span id="detail-cwe"></span></div>
+        <div><small>OWASP</small><br><span id="detail-owasp"></span></div>
+      </div>
+      <div><b>Description</b><p id="detail-desc" style="font-size:11px;margin:4px 0"></p></div>
+      <div><b>Remediation</b><pre id="detail-fix" style="font-size:10px;background:var(--bg-card);padding:8px;border-radius:4px;margin-top:4px;white-space:pre-wrap"></pre></div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

