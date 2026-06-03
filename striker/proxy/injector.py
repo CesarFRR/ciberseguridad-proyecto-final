@@ -12,7 +12,7 @@ HTML_TYPES = {"text/html", "application/xhtml+xml"}
 
 INJECT_SCRIPT = """
 <!-- ▸▸▸ STRIKER Element Selector ▸▸▸ -->
-<script src="/__striker__/element_selector.js?v=7"></script>
+<script src="/__striker__/element_selector.js?v=8"></script>
 """
 
 

@@ -4,6 +4,7 @@ from flask import Response, request as flask_request
 
 import config
 from proxy.injector import get_upstream_url, should_inject, inject_script
+from scanner.sensors import sensor_engine
 
 
 def proxy_request(target_url, path):
@@ -40,5 +41,20 @@ def proxy_request(target_url, path):
     if should_inject(upstream.headers.get("Content-Type", "")):
         content = inject_script(content, target_url)
         resp_headers["Content-Length"] = str(len(content))
+
+    # ── Sensor: escanear tráfico ─────────────────────────────
+    try:
+        req_body = flask_request.get_data(as_text=True) if flask_request.method in ("POST", "PUT") else ""
+        resp_text = upstream.text if len(upstream.text) < 50000 else upstream.text[:50000]
+        sensor_engine.scan(
+            ip=flask_request.remote_addr,
+            method=flask_request.method,
+            url=path,
+            status=upstream.status_code,
+            req_body=req_body,
+            resp_body=resp_text,
+        )
+    except Exception:
+        pass  # sensor nunca debe romper el proxy
 
     return Response(content, status=upstream.status_code, headers=resp_headers)

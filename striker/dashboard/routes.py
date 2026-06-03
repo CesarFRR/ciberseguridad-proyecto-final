@@ -1,7 +1,7 @@
 """Dashboard Blueprint: página principal + API de estado + escaneo."""
 import time
 import threading
-from flask import Blueprint, render_template, jsonify, request
+from flask import Blueprint, render_template, jsonify, request, Response, stream_with_context
 
 import config
 from scanner.engine import scan_session as run_scan
@@ -146,3 +146,36 @@ def api_mitre():
         return jsonify({"error": "not found"}), 404
     with open(path) as f:
         return jsonify(json.load(f))
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  SENSORES (live attack monitoring)
+# ═══════════════════════════════════════════════════════════════════
+
+@dashboard_bp.route("/api/sensors")
+def api_sensors():
+    """Estado actual de los sensores."""
+    from scanner.sensors import sensor_engine
+    return jsonify(sensor_engine.get_summary())
+
+
+@dashboard_bp.route("/api/sensors/stream")
+def api_sensors_stream():
+    """SSE stream de alertas de sensores en tiempo real."""
+    from scanner.sensors import sensor_engine
+
+    def generate():
+        last_id = 0
+        while True:
+            recent = sensor_engine.get_recent(20)
+            new_alerts = [a for a in recent if a["id"] > last_id]
+            if new_alerts:
+                last_id = new_alerts[0]["id"]
+                yield f"data: {json.dumps({'alerts': new_alerts, 'summary': sensor_engine.get_summary()})}\n\n"
+            time.sleep(1.0)
+
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

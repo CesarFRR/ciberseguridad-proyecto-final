@@ -8,6 +8,54 @@ const $ = (id) => document.getElementById(id);
 const els = {};
 let selectModeOn = false;
 let mitreMap = {};
+let soundOn = true;
+
+// ── Audio Engine (Web Audio API) ─────────────────────────────
+const Audio = {
+  _ctx: null,
+  ctx() { if(!this._ctx){this._ctx=new(window.AudioContext||window.webkitAudioContext)()} if(this._ctx.state==='suspended')this._ctx.resume(); return this._ctx },
+  beep(f,d=0.1,v=0.08,t='sine'){try{const c=this.ctx(),o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,c.currentTime);g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+d);o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(_){} },
+  alertLow(){this.beep(800,0.06,0.06)},
+  alertMed(){this.beep(880,0.1,0.08);setTimeout(()=>this.beep(660,0.08,0.06),100)},
+  alertHigh(){this.beep(1200,0.15,0.1);setTimeout(()=>this.beep(900,0.12,0.08),150);setTimeout(()=>this.beep(600,0.15,0.06),300)},
+  alertCrit(){this.beep(400,0.3,0.12);setTimeout(()=>this.beep(300,0.4,0.1),200);setTimeout(()=>this.beep(500,0.3,0.12),400);setTimeout(()=>this.beep(250,0.6,0.08),700)},
+  scanStart(){this.beep(200,0.15,0.06);setTimeout(()=>this.beep(400,0.1,0.08),150)},
+  scanDone(){this.beep(600,0.1,0.08);setTimeout(()=>this.beep(800,0.1,0.08),100);setTimeout(()=>this.beep(1000,0.15,0.06),200)},
+};
+
+function toggleSound(){ soundOn=!soundOn; const b=$("btn-sound"); if(b)b.textContent=soundOn?'🔊 Sound ON':'🔇 Sound OFF'; }
+
+// ── Monitor SSE ──────────────────────────────────────────────
+function startMonitorSSE(){
+  const src=new EventSource('/api/sensors/stream');
+  src.onmessage=e=>{
+    try{
+      const d=JSON.parse(e.data);
+      if(d.alerts) d.alerts.forEach(a=>renderMonitorAlert(a));
+      if(d.summary) updateMonitorStats(d.summary);
+    }catch(_){}
+  };
+  src.onerror=()=>setTimeout(startMonitorSSE,3000);
+}
+
+function renderMonitorAlert(a){
+  const feed=$('monitor-feed'); if(!feed)return;
+  if(feed.querySelector('.monitor-alert')&&feed.children.length>50)feed.lastChild.remove();
+  const sev=a.findings[0]?.severity||'low';
+  const types=[...new Set(a.findings.map(f=>f.type))].join(', ');
+  const match=a.findings[0]?.matched||'';
+  const el=document.createElement('div');
+  el.className=`monitor-alert ${sev}`;
+  el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span class="ma-ip">${a.ip}</span><span class="ma-type" style="color:${sev==='critical'?'var(--red)':sev==='high'?'#f97316':'var(--amber)'}">${sev.toUpperCase()}</span><span>${types}</span></div><div class="ma-match">${match}</div>`;
+  feed.insertBefore(el,feed.firstChild);
+  // Audio
+  if(soundOn){ if(sev==='critical')Audio.alertCrit();else if(sev==='high')Audio.alertHigh();else if(sev==='medium')Audio.alertMed();else Audio.alertLow() }
+}
+
+function updateMonitorStats(s){
+  const t=$('mon-total'); if(t)t.textContent=s.total_alerts||0;
+  const i=$('mon-ips'); if(i)i.textContent=s.unique_ips||0;
+}
 
 async function loadMitre(){try{const r=await fetch("/api/mitre");mitreMap=(await r.json()).mappings||{}}catch(_){}}
 
@@ -138,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSessions();
   loadMitre();
   setInterval(loadSessions, 5000);
+  startMonitorSSE();
 
   // ── Restore last target ──────────────────────────────────
   try { const last = localStorage.getItem("striker_last_target"); if (last && els.targetUrl) els.targetUrl.value = last; } catch (_) {}
