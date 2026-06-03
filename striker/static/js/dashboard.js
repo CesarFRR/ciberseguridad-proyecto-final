@@ -9,6 +9,7 @@ const els = {};
 let selectModeOn = false;
 let mitreMap = {};
 let attacksData = {};
+let activityLog = [];  // historial permanente
 
 async function loadMitre(){try{const r=await fetch("/api/mitre");mitreMap=(await r.json()).mappings||{}}catch(_){}}
 async function loadAttacks(){try{const r=await fetch("/api/attacks");attacksData=(await r.json()).attacks||{}}catch(_){}}
@@ -160,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const count = d.count || 0;
       const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
       if (count > 0) {
+        const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
         const html = `<div class="st" style="margin-bottom:6px">🔍 SAST: ${count} vulns en ${path}</div>` +
           (d.findings || []).slice(0, 15).map(f =>
             `<div class="card rc" style="border-left-color:${sev[f.severity]||'#3b82f6'}">
@@ -170,8 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>`
           ).join("");
         if (els.resultsList) els.resultsList.innerHTML = html;
-      } else {
-        if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--green);font-size:10px">✓ No vulnerabilities found in ' + path + '</div>';
+        // Add to permanent log
+        addLog("sast", `${count} vulns in source code`, els.targetUrl?.value || "", d.findings || []);
+        // Attach path to log
+        if (activityLog.length > 0) activityLog[0].path = path;
+        renderLogs();
       }
     } catch (_) {
       if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--danger);font-size:10px">✗ SAST failed</div>';
@@ -186,18 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (els.elemList) els.elemList.innerHTML = '<div class="elements-empty">Select elements on the target page.</div>';
     if (els.clearSel) els.clearSel.style.display = "none";
     if (els.btnScan) els.btnScan.disabled = true;
-  });
-
-  // ── EXPORT ──────────────────────────────────────────────────
-  $("btn-export")?.addEventListener("click", async () => {
-    try {
-      const r = await fetch("/api/sessions"), d = await r.json();
-      const blob = new Blob([JSON.stringify(d, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "striker-report-" + new Date().toISOString().slice(0, 10) + ".json";
-      a.click();
-    } catch (_) { alert("Export failed"); }
   });
 
   // ── HELP ─────────────────────────────────────────────────
@@ -338,6 +331,8 @@ function handleIframeMsg(e) {
     if (els.systemDot) { els.systemDot.className = (d.count || 0) > 0 ? "status-dot red" : "status-dot green"; }
     renderResults(d.results || []);
     loadSessions();
+    // Log
+    addLog("scan", (d.results||[]).length + " vulns found", els.targetUrl?.value || "", d.results || []);
   }
 
   if (d.type === "nav_update") {
@@ -497,6 +492,55 @@ function renderSessionTable(sessions) {
 
 // ── Clock ────────────────────────────────────────────────────────
 function updateClock() { if (els.timeDisplay) els.timeDisplay.textContent = new Date().toTimeString().split(" ")[0] + " UTC"; }
+
+// ── Activity Log ────────────────────────────────────────────────
+function addLog(type, summary, targetUrl, data) {
+  activityLog.unshift({
+    time: new Date().toISOString(),
+    type, summary, target: targetUrl,
+    data: Array.isArray(data) ? data.slice(0, 50) : [],
+    count: Array.isArray(data) ? data.length : 0,
+  });
+  if (activityLog.length > 100) activityLog.length = 100;
+  renderLogs();
+}
+
+function renderLogs() {
+  const el = $("logs-table");
+  if (!el) return;
+  if (!activityLog.length) {
+    el.innerHTML = '<div class="empt">No activity yet.</div>';
+    return;
+  }
+  el.innerHTML = activityLog.map((l, i) =>
+    `<div class="card" style="margin-bottom:6px;padding:8px 10px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:600;font-size:10px">${l.type === "scan" ? "🎯 Scan" : l.type === "sast" ? "🔍 SAST" : "📋 " + l.type}</span>
+        <span style="font-size:9px;color:var(--text-muted)">${new Date(l.time).toLocaleTimeString()}</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:2px">${l.summary}</div>
+      ${l.target ? `<div style="font-family:monospace;font-size:9px;color:var(--accent);margin-top:2px">${l.target}</div>` : ''}
+      ${l.path ? `<div style="font-family:monospace;font-size:8px;color:var(--green);margin-top:1px">${l.path}</div>` : ''}
+    </div>`
+  ).join("");
+}
+
+// ── EXPORT (from logs) ─────────────────────────────────────────
+$("btn-export")?.addEventListener("click", () => {
+  if (!activityLog.length) return alert("No hay datos para exportar.");
+  const blob = new Blob([JSON.stringify(activityLog, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "striker-report-" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click();
+});
+
+// ── CLEAR LOGS ─────────────────────────────────────────────────
+$("btn-clear-logs")?.addEventListener("click", () => {
+  if (!confirm("¿Borrar todo el historial de actividad?")) return;
+  activityLog = [];
+  renderLogs();
+});
 
 // ── Nav URL tracking ────────────────────────────────────────────
 function updateNavUrl(base, path) {
