@@ -342,7 +342,7 @@ a.back{color:var(--accent);font-size:11px;display:block;text-align:center;margin
   <div class="box">
     <h3>② Comments (Stored)</h3>
     <span class="technique">Stored XSS</span>
-    <form method="POST" action="/xss">
+    <form method="POST">
       <input type="text" name="cname" placeholder="Name">
       <textarea name="cmsg" rows="2" placeholder="Comment..."></textarea>
       <button type="submit">Post</button>
@@ -375,7 +375,7 @@ a.back{color:var(--accent);font-size:11px;display:block;text-align:center;margin
   <div class="box">
     <h3>④ Timer (JS Context)</h3>
     <span class="technique">JavaScript string injection</span>
-    <form method="GET" action="/xss">
+    <form method="GET">
       <input type="text" name="timer" placeholder="Seconds" value="3">
       <button type="submit" name="start" value="1">Start Timer</button>
     </form>
