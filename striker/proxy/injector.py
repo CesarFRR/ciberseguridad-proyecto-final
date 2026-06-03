@@ -48,7 +48,7 @@ INJECT_SCRIPT = """
   }
 })();
 </script>
-<script src="/__striker__/element_selector.js?v=8"></script>
+<script src="/__striker__/element_selector.js?v=9"></script>
 """
 
 
