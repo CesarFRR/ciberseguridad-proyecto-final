@@ -129,21 +129,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ── SAST ───────────────────────────────────────────────────
   $("btn-sast")?.addEventListener("click", async () => {
-    const path = prompt("Project path to analyze (e.g., ../pagina-testing):", "../pagina-testing");
+    const path = prompt("Ruta del proyecto a analizar:", "../pagina-testing");
     if (!path) return;
     $("btn-sast").textContent = "⋯ Analyzing";
     try {
-      const r = await fetch("/api/sast", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+      const r = await fetch("/api/sast", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path }),
+      });
       const d = await r.json();
-      switchTab("sessions"); // show in sessions tab
-      alert(`${d.count} vulnerabilities found in source code. Check console for details.`);
-      console.table(d.findings?.slice(0, 20) || []);
-      // Show brief summary in results panel
-      if (d.findings?.length) {
-        const summary = d.findings.slice(0, 10).map(f => `L${f.line}: [${f.severity}] ${f.category}`).join("\n");
-        if (els.resultsList) els.resultsList.innerHTML = `<pre style="font-size:10px;padding:8px;white-space:pre-wrap">${summary}</pre>`;
+      const count = d.count || 0;
+      if (count > 0) {
+        // Mostrar resultados en el panel derecho
+        const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
+        const html = `<div class="st" style="margin-bottom:6px">🔍 SAST: ${count} vulnerabilidades en ${path}</div>` +
+          (d.findings || []).slice(0, 15).map(f =>
+            `<div class="card rc" style="border-left-color:${sev[f.severity]||'#3b82f6'}">
+              <div style="font-size:8px;font-weight:700;color:${sev[f.severity]||'#3b82f6'}">${f.severity.toUpperCase()} · ${f.category}</div>
+              <div style="font-family:monospace;font-size:9px;color:var(--accent)">${f.file?.split('/').pop()}:${f.line}</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:2px">${(f.code||'').slice(0, 80)}</div>
+              ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:2px">Fix: ${f.fix.slice(0, 80)}</div>` : ''}
+            </div>`
+          ).join("");
+        if (els.resultsList) els.resultsList.innerHTML = html;
+      } else {
+        if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--green);font-size:10px">✓ No vulnerabilities found</div>';
       }
-    } catch (_) { alert("SAST failed"); }
+    } catch (_) {
+      if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--danger);font-size:10px">✗ SAST failed. Check server logs.</div>';
+    }
     $("btn-sast").textContent = "🔍 Analyze source code";
   });
 
