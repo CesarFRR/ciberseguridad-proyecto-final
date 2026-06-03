@@ -16,17 +16,21 @@ INJECT_SCRIPT = """
 (function(){
   var TARGET=new URLSearchParams(window.location.search).get('target')||'';
   if(TARGET){
-    // Intercept fetch/XHR
+    // Intercept fetch/XHR — solo rutas del target, NO de Striker
     var _fetch=window.fetch;
     window.fetch=function(url,opts){
-      if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('/proxy')&&!url.startsWith('/__striker__')){
+      if(typeof url==='string'&&url.startsWith('/')&&
+         !url.startsWith('/proxy')&&!url.startsWith('/api/')&&
+         !url.startsWith('/__striker__')&&!url.startsWith('/static/')){
         url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
       }
       return _fetch.call(this,url,opts);
     };
     var _open=XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open=function(method,url){
-      if(typeof url==='string'&&url.startsWith('/')&&!url.startsWith('/proxy')&&!url.startsWith('/__striker__')){
+      if(typeof url==='string'&&url.startsWith('/')&&
+         !url.startsWith('/proxy')&&!url.startsWith('/api/')&&
+         !url.startsWith('/__striker__')&&!url.startsWith('/static/')){
         url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
       }
       return _open.call(this,method,url);
@@ -48,7 +52,7 @@ INJECT_SCRIPT = """
   }
 })();
 </script>
-<script src="/__striker__/element_selector.js?v=9"></script>
+<script src="/__striker__/element_selector.js?v=10"></script>
 """
 
 
