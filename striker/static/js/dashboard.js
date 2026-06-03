@@ -200,7 +200,11 @@ function handleIframeMsg(e) {
   }
 
   if (d.type === "scan_complete") {
-    ...
+    if (els.btnScan) { els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false; }
+    if (els.systemText) { els.systemText.textContent = (d.count || 0) > 0 ? "VULNERABLE" : "CLEAN"; }
+    if (els.systemDot) { els.systemDot.className = (d.count || 0) > 0 ? "status-dot red" : "status-dot green"; }
+    renderResults(d.results || []);
+    loadSessions();
   }
 
   if (d.type === "nav_update") {
