@@ -26,6 +26,15 @@ def api_targets():
     elements = data.get("elements", [])
     target_url = request.args.get("target", "unknown")
 
+    # Extraer target real de URL del proxy
+    if "/proxy?target=" in target_url:
+        from urllib.parse import urlparse, parse_qs, unquote
+        parsed = urlparse(target_url)
+        qs = parse_qs(parsed.query)
+        real_target = qs.get("target", [None])[0]
+        if real_target:
+            target_url = unquote(real_target)
+
     session_counter += 1
     session_id = f"session_{int(time.time())}_{session_counter}"
 
