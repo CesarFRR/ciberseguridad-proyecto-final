@@ -12,6 +12,29 @@ HTML_TYPES = {"text/html", "application/xhtml+xml"}
 
 INJECT_SCRIPT = """
 <!-- ▸▸▸ STRIKER Element Selector ▸▸▸ -->
+<script>
+(function(){
+  var TARGET=new URLSearchParams(window.location.search).get('target')||'';
+  if(TARGET){
+    var _fetch=window.fetch;
+    window.fetch=function(url,opts){
+      if(typeof url==='string'&&url.startsWith('/')){
+        var sep=url.includes('?')?'&':'?';
+        url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
+      }
+      return _fetch.call(this,url,opts);
+    };
+    var _open=XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open=function(method,url){
+      if(typeof url==='string'&&url.startsWith('/')){
+        var sep=url.includes('?')?'&':'?';
+        url='/proxy?target='+encodeURIComponent(TARGET)+'&path='+encodeURIComponent(url);
+      }
+      return _open.call(this,method,url);
+    };
+  }
+})();
+</script>
 <script src="/__striker__/element_selector.js?v=8"></script>
 """
 

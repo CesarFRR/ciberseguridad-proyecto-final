@@ -46,10 +46,18 @@ document.addEventListener("DOMContentLoaded", () => {
       let u = navUrl.value.trim();
       if (!u) return;
       if (!u.startsWith("http")) u = "http://" + u;
-      // Update the iframe via proxy
-      const proxyUrl = "/proxy?target=" + encodeURIComponent(u);
+      // Parse base URL + path
+      let proxyUrl;
+      try {
+        const parsed = new URL(u);
+        const base = parsed.origin;
+        const path = parsed.pathname + parsed.search;
+        proxyUrl = "/proxy?target=" + encodeURIComponent(base) + "&path=" + encodeURIComponent(path);
+      } catch(_) {
+        proxyUrl = "/proxy?target=" + encodeURIComponent(u);
+      }
       if (els.frame) { els.frame.src = proxyUrl; }
-      navUrl.blur();  // quitar foco del input
+      navUrl.blur();
     }
   });
 
