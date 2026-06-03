@@ -115,22 +115,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = els.targetUrl?.value?.trim();
     if (!url) return alert("Enter a target URL first");
     const target = url.startsWith("http") ? url : "http://" + url;
-    // Load the page first if not loaded
-    if (!els.frame?.src || els.placeholder?.style.display !== "none") {
-      loadTarget();
-      await new Promise(r => setTimeout(r, 2000)); // wait for page to load
-    }
     $("btn-autodetect").textContent = "⋯ Crawling";
     try {
       const r = await fetch("/api/crawl", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
       const d = await r.json();
       if (d.elements?.length) {
-        els.frame?.contentWindow?.postMessage({ type: "cmd_load_elements", elements: d.elements }, "*");
-        $("btn-autodetect").textContent = "✓ " + d.count + " elements found";
-        setTimeout(() => { $("btn-autodetect").textContent = "🕷 Auto-detect inputs"; }, 3000);
+        // Registrar directamente en el backend como targets
+        const tr = await fetch("/api/targets?target=" + encodeURIComponent(target), {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ elements: d.elements }),
+        });
+        const td = await tr.json();
+        // Mostrar en el panel derecho
+        renderElements(d.elements);
+        if (els.selCount) els.selCount.textContent = d.count;
+        if (els.btnScan) els.btnScan.disabled = false;
+        if (els.clearSel) els.clearSel.style.display = "block";
+        $("btn-autodetect").textContent = "✓ " + d.count + " found";
+        setTimeout(() => { $("btn-autodetect").textContent = "🕷 Auto-detect inputs"; }, 2500);
       } else {
         $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
-        alert("No form elements found on this page.");
+        alert("No inputs found on this page.");
       }
     } catch (_) {
       $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
