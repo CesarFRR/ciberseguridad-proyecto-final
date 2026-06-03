@@ -1,0 +1,130 @@
+{
+  "rules": [
+    {
+      "id": "PY-SQLI-001",
+      "pattern": "f\"SELECT.*{.*}.*FROM\"|f'SELECT.*{.*}.*FROM'",
+      "category": "SQL Injection",
+      "severity": "critical",
+      "cwe": "CWE-89",
+      "description": "String interpolation in SQL query. User input directly concatenated into SQL statement.",
+      "fix": "Use parameterized queries: cursor.execute('SELECT * FROM users WHERE id=%s', (user_id,))"
+    },
+    {
+      "id": "PY-SQLI-002",
+      "pattern": "\\.execute\\(.*\\+.*\\)|\\.execute\\(.*format\\(.*\\)\\)",
+      "category": "SQL Injection",
+      "severity": "critical",
+      "cwe": "CWE-89",
+      "description": "String concatenation in cursor.execute(). User input appended to SQL query.",
+      "fix": "Pass parameters as second argument to execute(): cursor.execute(query, params)"
+    },
+    {
+      "id": "PY-SQLI-003",
+      "pattern": "%s.*%s.*SQL|sql.*=.*%.*user|query.*=.*%.*input",
+      "category": "SQL Injection",
+      "severity": "high",
+      "cwe": "CWE-89",
+      "description": "Potential string formatting in SQL query construction.",
+      "fix": "Use parameterized queries with placeholders."
+    },
+    {
+      "id": "PY-CMDI-001",
+      "pattern": "shell\\s*=\\s*True",
+      "category": "Command Injection",
+      "severity": "critical",
+      "cwe": "CWE-77",
+      "description": "subprocess with shell=True allows command injection via shell metacharacters.",
+      "fix": "Use subprocess.run(['cmd', arg]) without shell=True, and validate input with allowlist."
+    },
+    {
+      "id": "PY-CMDI-002",
+      "pattern": "os\\.system\\(|os\\.popen\\(|commands\\.getoutput\\(",
+      "category": "Command Injection",
+      "severity": "critical",
+      "cwe": "CWE-78",
+      "description": "os.system() or os.popen() with user input allows arbitrary command execution.",
+      "fix": "Replace with subprocess.run() and never pass user input directly."
+    },
+    {
+      "id": "PY-XSS-001",
+      "pattern": "\\|\\s*safe",
+      "category": "Cross-Site Scripting",
+      "severity": "high",
+      "cwe": "CWE-79",
+      "description": "Jinja2 | safe filter disables auto-escaping. User input rendered as raw HTML.",
+      "fix": "Remove | safe filter. Use escape() or let Jinja2 auto-escape by default."
+    },
+    {
+      "id": "PY-XSS-002",
+      "pattern": "render_template_string\\(",
+      "category": "Cross-Site Scripting",
+      "severity": "medium",
+      "cwe": "CWE-79",
+      "description": "render_template_string() with user input can lead to SSTI or XSS if not escaped.",
+      "fix": "Use render_template() with separate template files. Escape user input with markupsafe."
+    },
+    {
+      "id": "PY-XSS-003",
+      "pattern": "Markup\\(|escape\\(.*request\\.|safe.*True",
+      "category": "Cross-Site Scripting",
+      "severity": "medium",
+      "cwe": "CWE-79",
+      "description": "User input marked as safe without sanitization.",
+      "fix": "Escape all user input before rendering. Only mark as safe after sanitization."
+    },
+    {
+      "id": "PY-PATHTRAV-001",
+      "pattern": "open\\(.*request\\.(args|form|json)\\b",
+      "category": "Path Traversal",
+      "severity": "critical",
+      "cwe": "CWE-22",
+      "description": "File opened with user-supplied path. Allows reading arbitrary files (../../etc/passwd).",
+      "fix": "Use os.path.basename() to strip path components. Restrict to whitelist of allowed files."
+    },
+    {
+      "id": "PY-PATHTRAV-002",
+      "pattern": "os\\.path\\.join\\(.*request\\.",
+      "category": "Path Traversal",
+      "severity": "high",
+      "cwe": "CWE-22",
+      "description": "os.path.join with user input. Attacker can use absolute paths to escape the directory.",
+      "fix": "Validate the result is still within the intended directory using os.path.realpath()."
+    },
+    {
+      "id": "PY-EVAL-001",
+      "pattern": "\\beval\\(|\\bexec\\(|\\bcompile\\(",
+      "category": "Code Execution",
+      "severity": "critical",
+      "cwe": "CWE-95",
+      "description": "eval() or exec() with user input allows arbitrary Python code execution on the server.",
+      "fix": "Never use eval()/exec() with user input. Use safe parsers like ast.literal_eval() for data."
+    },
+    {
+      "id": "PY-PICKLE-001",
+      "pattern": "pickle\\.loads?\\(.*request\\.",
+      "category": "Insecure Deserialization",
+      "severity": "critical",
+      "cwe": "CWE-502",
+      "description": "Unpickling user-supplied data allows remote code execution.",
+      "fix": "Never unpickle data from untrusted sources. Use JSON or a safe serialization format."
+    },
+    {
+      "id": "PY-HARDCODE-001",
+      "pattern": "(SECRET_KEY|password|api_key|token)\\s*=\\s*['\"][^'\"]+['\"]",
+      "category": "Hardcoded Secret",
+      "severity": "high",
+      "cwe": "CWE-798",
+      "description": "Hardcoded credentials or secrets in source code. Exposed if code is leaked.",
+      "fix": "Use environment variables: os.environ.get('SECRET_KEY'). Never commit secrets to version control."
+    },
+    {
+      "id": "PY-DEBUG-001",
+      "pattern": "debug\\s*=\\s*True|DEBUG\\s*=\\s*True",
+      "category": "Security Misconfiguration",
+      "severity": "medium",
+      "cwe": "CWE-489",
+      "description": "Debug mode enabled. Exposes stack traces, environment variables, and interactive debugger.",
+      "fix": "Set debug=False in production. Use environment variable: app.run(debug=os.environ.get('DEBUG','0')=='1')"
+    }
+  ]
+}

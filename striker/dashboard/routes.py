@@ -188,3 +188,45 @@ def api_sensors_stream():
         mimetype="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  CRAWLER + SAST
+# ═══════════════════════════════════════════════════════════════════
+
+@dashboard_bp.route("/api/crawl", methods=["POST"])
+def api_crawl():
+    """Crawlea una URL y descubre formularios/inputs automáticamente."""
+    data = request.get_json(force=True, silent=True) or {}
+    url = data.get("url", "")
+
+    if not url:
+        return jsonify({"error": "url required"}), 400
+
+    from scanner.crawler import crawl_to_elements
+    elements = crawl_to_elements(url)
+
+    return jsonify({
+        "url": url,
+        "elements": elements,
+        "count": len(elements),
+    })
+
+
+@dashboard_bp.route("/api/sast", methods=["POST"])
+def api_sast():
+    """Escanea un directorio con SAST (análisis estático Python)."""
+    data = request.get_json(force=True, silent=True) or {}
+    dirpath = data.get("path", "")
+
+    if not dirpath:
+        return jsonify({"error": "path required"}), 400
+
+    from scanner.python_sast import scan_directory
+    findings = scan_directory(dirpath)
+
+    return jsonify({
+        "path": dirpath,
+        "findings": findings,
+        "count": len(findings),
+    })
