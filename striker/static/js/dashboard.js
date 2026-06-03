@@ -210,9 +210,6 @@ function handleIframeMsg(e) {
   if (d.type === "nav_update") {
     if (d.base) updateNavUrl(d.base, d.path || "/");
   }
-    renderResults(d.results || []);
-    loadSessions();
-  }
 
   if (d.type === "mode_changed") {
     selectModeOn = d.selectMode;
