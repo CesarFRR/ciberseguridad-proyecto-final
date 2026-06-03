@@ -1,6 +1,6 @@
 # Striker — DAST Web Vulnerability Scanner
 
-## Contexto para IA
+## Descripción
 
 Striker es un **Dynamic Application Security Testing (DAST)** para aplicaciones web. Permite a desarrolladores seleccionar visualmente elementos de una página (inputs, botones, formularios) y escanearlos automáticamente en busca de vulnerabilidades de seguridad.
 
