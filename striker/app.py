@@ -21,6 +21,15 @@ def create_app():
         resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         return resp
 
+    @app.route("/favicon.ico")
+    def favicon():
+        from flask import make_response
+        svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#3b82f6"/><text x="16" y="22" text-anchor="middle" fill="white" font-size="18" font-weight="bold" font-family="monospace">S</text></svg>'
+        resp = make_response(svg)
+        resp.headers["Content-Type"] = "image/svg+xml"
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+        return resp
+
     return app
 
 
