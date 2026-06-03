@@ -127,11 +127,29 @@ document.addEventListener("DOMContentLoaded", () => {
     $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
   });
 
-  // ── SAST ───────────────────────────────────────────────────
+  // ── SAST (auto-discover project path) ──────────────────────
   $("btn-sast")?.addEventListener("click", async () => {
-    const path = prompt("Ruta del proyecto a analizar:", "../pagina-testing");
-    if (!path) return;
-    $("btn-sast").textContent = "⋯ Analyzing";
+    $("btn-sast").textContent = "⋯ Discovering";
+    let path = "";
+    // Try auto-discover from target URL
+    const targetUrl = els.targetUrl?.value?.trim();
+    if (targetUrl) {
+      try {
+        const r = await fetch("/api/discover", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: targetUrl }),
+        });
+        const d = await r.json();
+        if (d.cwd) path = d.cwd;
+      } catch (_) {}
+    }
+    if (!path) {
+      path = prompt("No se pudo detectar automáticamente.\nRuta del proyecto:", "../pagina-testing");
+    }
+    if (!path) { $("btn-sast").textContent = "🔍 Analyze source code"; return; }
+
+    $("btn-sast").textContent = "⋯ Analyzing " + path.split("/").pop();
     try {
       const r = await fetch("/api/sast", {
         method: "POST",
@@ -140,26 +158,34 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const d = await r.json();
       const count = d.count || 0;
+      const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
       if (count > 0) {
-        // Mostrar resultados en el panel derecho
-        const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
-        const html = `<div class="st" style="margin-bottom:6px">🔍 SAST: ${count} vulnerabilidades en ${path}</div>` +
+        const html = `<div class="st" style="margin-bottom:6px">🔍 SAST: ${count} vulns en ${path}</div>` +
           (d.findings || []).slice(0, 15).map(f =>
             `<div class="card rc" style="border-left-color:${sev[f.severity]||'#3b82f6'}">
-              <div style="font-size:8px;font-weight:700;color:${sev[f.severity]||'#3b82f6'}">${f.severity.toUpperCase()} · ${f.category}</div>
-              <div style="font-family:monospace;font-size:9px;color:var(--accent)">${f.file?.split('/').pop()}:${f.line}</div>
+              <div style="font-size:8px;font-weight:700;color:${sev[f.severity]||'#3b82f6'}">${(f.severity||'').toUpperCase()} · ${f.category}</div>
+              <div style="font-family:monospace;font-size:9px;color:var(--accent)">${(f.file||'').split('/').pop()}:${f.line}</div>
               <div style="font-size:9px;color:var(--text-muted);margin-top:2px">${(f.code||'').slice(0, 80)}</div>
               ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:2px">Fix: ${f.fix.slice(0, 80)}</div>` : ''}
             </div>`
           ).join("");
         if (els.resultsList) els.resultsList.innerHTML = html;
       } else {
-        if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--green);font-size:10px">✓ No vulnerabilities found</div>';
+        if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--green);font-size:10px">✓ No vulnerabilities found in ' + path + '</div>';
       }
     } catch (_) {
-      if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--danger);font-size:10px">✗ SAST failed. Check server logs.</div>';
+      if (els.resultsList) els.resultsList.innerHTML = '<div style="color:var(--danger);font-size:10px">✗ SAST failed</div>';
     }
     $("btn-sast").textContent = "🔍 Analyze source code";
+  });
+
+  // ── CLEAR SELECTION (fixed) ─────────────────────────────────
+  els.clearSel?.addEventListener("click", () => {
+    els.frame?.contentWindow?.postMessage({ type: "cmd_clear_selection" }, "*");
+    if (els.selCount) els.selCount.textContent = "0";
+    if (els.elemList) els.elemList.innerHTML = '<div class="elements-empty">Select elements on the target page.</div>';
+    if (els.clearSel) els.clearSel.style.display = "none";
+    if (els.btnScan) els.btnScan.disabled = true;
   });
 
   // ── EXPORT ──────────────────────────────────────────────────

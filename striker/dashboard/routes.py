@@ -173,6 +173,23 @@ def api_attacks():
 #  DDoS SIMULATION
 # ═══════════════════════════════════════════════════════════════════
 
+@dashboard_bp.route("/api/discover", methods=["POST"])
+def api_discover():
+    """Descubre la ruta del proyecto a partir de un puerto local."""
+    from scanner.process_scanner import discover_project_path
+    data = request.get_json(force=True, silent=True) or {}
+    target = data.get("url", data.get("port", ""))
+
+    if not target:
+        return jsonify({"error": "url or port required"}), 400
+
+    info = discover_project_path(target)
+    if not info:
+        return jsonify({"error": "No process found on that port"}), 404
+
+    return jsonify(info)
+
+
 @dashboard_bp.route("/api/ddos/start", methods=["POST"])
 def api_ddos_start():
     """Inicia simulación DDoS."""
