@@ -429,7 +429,7 @@ a.back{color:var(--accent);font-size:11px;display:block;text-align:center;margin
   var u = location.hash.slice(1);
   var s = document.getElementById('xss-filter-status');
   if (!u) return;
-  if (u.match(/^https?:///)) {
+  if (u.match(/^https?:\\/\\//)) {
     s.innerHTML = '🚫 BLOCKED: http/https not allowed. Try data: URI.';
     s.style.color = '#f85149';
     return;
