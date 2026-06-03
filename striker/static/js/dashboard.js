@@ -115,17 +115,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = els.targetUrl?.value?.trim();
     if (!url) return alert("Enter a target URL first");
     const target = url.startsWith("http") ? url : "http://" + url;
+    // Load the page first if not loaded
+    if (!els.frame?.src || els.placeholder?.style.display !== "none") {
+      loadTarget();
+      await new Promise(r => setTimeout(r, 2000)); // wait for page to load
+    }
     $("btn-autodetect").textContent = "⋯ Crawling";
     try {
       const r = await fetch("/api/crawl", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
       const d = await r.json();
       if (d.elements?.length) {
-        // Send to iframe selector
         els.frame?.contentWindow?.postMessage({ type: "cmd_load_elements", elements: d.elements }, "*");
-        alert(`Found ${d.count} elements. Switch to SELECT MODE to review.`);
+        $("btn-autodetect").textContent = "✓ " + d.count + " elements found";
+        setTimeout(() => { $("btn-autodetect").textContent = "🕷 Auto-detect inputs"; }, 3000);
+      } else {
+        $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
+        alert("No form elements found on this page.");
       }
-    } catch (_) { alert("Crawl failed"); }
-    $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
+    } catch (_) {
+      $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
+      alert("Crawl failed. Is the target reachable?");
+    }
   });
 
   // ── SAST (auto-discover project path) ──────────────────────
@@ -162,13 +172,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
       if (count > 0) {
         const sev = { critical: "#ef4444", high: "#f97316", medium: "#f59e0b", low: "#3b82f6" };
-        const html = `<div class="st" style="margin-bottom:6px">🔍 SAST: ${count} vulns en ${path}</div>` +
+        const html = `<div class="sidebar-title" style="margin-bottom:6px">🔍 SAST: ${count} vulns in ${path}</div>` +
           (d.findings || []).slice(0, 15).map(f =>
-            `<div class="card rc" style="border-left-color:${sev[f.severity]||'#3b82f6'}">
-              <div style="font-size:8px;font-weight:700;color:${sev[f.severity]||'#3b82f6'}">${(f.severity||'').toUpperCase()} · ${f.category}</div>
-              <div style="font-family:monospace;font-size:9px;color:var(--accent)">${(f.file||'').split('/').pop()}:${f.line}</div>
-              <div style="font-size:9px;color:var(--text-muted);margin-top:2px">${(f.code||'').slice(0, 80)}</div>
-              ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:2px">Fix: ${f.fix.slice(0, 80)}</div>` : ''}
+            `<div class="card" style="border-left:3px solid ${sev[f.severity]||'#3b82f6'};margin-bottom:6px;overflow:hidden">
+              <div style="font-size:9px;font-weight:700;color:${sev[f.severity]||'#3b82f6'};text-transform:uppercase;margin-bottom:2px">${(f.severity||'?').toUpperCase()} · ${f.category}</div>
+              <div style="font-family:monospace;font-size:9px;color:var(--accent)">📄 ${(f.file||'').split('/').pop()}:${f.line}</div>
+              <div style="font-size:9px;color:var(--text-muted);margin-top:2px;word-break:break-all">${(f.code||'').slice(0, 100)}</div>
+              ${f.fix ? `<div style="font-size:8px;color:var(--green);margin-top:3px;padding-top:3px;border-top:1px solid var(--border)">💡 ${f.fix.slice(0, 100)}</div>` : ''}
             </div>`
           ).join("");
         if (els.resultsList) els.resultsList.innerHTML = html;
