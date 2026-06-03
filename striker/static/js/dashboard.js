@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ── IFRAME NAV ────────────────────────────────────────────
   const navBack = $("nav-back"), navFwd = $("nav-fwd"), navReload = $("nav-reload"), navUrl = $("nav-url");
-  if (navBack) navBack.addEventListener("click", () => els.frame?.contentWindow?.history?.back());
-  if (navFwd) navFwd.addEventListener("click", () => els.frame?.contentWindow?.history?.forward());
+  if (navBack) navBack.addEventListener("click", () => { els.frame?.contentWindow?.history?.back(); setTimeout(updateNavFromFrame, 200); });
+  if (navFwd) navFwd.addEventListener("click", () => { els.frame?.contentWindow?.history?.forward(); setTimeout(updateNavFromFrame, 200); });
   if (navReload) navReload.addEventListener("click", () => { if (els.frame) els.frame.src = els.frame.src; });
   if (navUrl) navUrl.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.keyCode === 13) {
@@ -173,8 +173,9 @@ function loadTarget() {
   if (els.frame) { els.frame.src = proxyUrl; els.frame.style.display = "block"; }
   if (els.placeholder) els.placeholder.style.display = "none";
   // Update nav URL bar
-  const navUrlEl = $("nav-url");
-  if (navUrlEl) navUrlEl.value = target;
+  updateNavUrl(target, "/");
+  // Track iframe navigation
+  els.frame?.addEventListener("load", updateNavFromFrame);
 
   // Reset button states
   selectModeOn = false;
@@ -362,6 +363,25 @@ function renderSessionTable(sessions) {
 
 // ── Clock ────────────────────────────────────────────────────────
 function updateClock() { if (els.timeDisplay) els.timeDisplay.textContent = new Date().toTimeString().split(" ")[0] + " UTC"; }
+
+// ── Nav URL tracking ────────────────────────────────────────────
+function updateNavUrl(base, path) {
+  const el = $("nav-url");
+  if (!el) return;
+  if (path === "/" || !path) el.value = base;
+  else el.value = base.replace(/\/$/, "") + path;
+}
+
+function updateNavFromFrame() {
+  try {
+    const frame = els.frame;
+    if (!frame || !frame.src) return;
+    const url = new URL(frame.src);
+    const base = url.searchParams.get("target");
+    const path = url.searchParams.get("path") || "/";
+    if (base) updateNavUrl(base, path);
+  } catch (_) {}
+}
 
 // ═══ SENSORS + MONITOR + AUDIO ═══════════════════════════════════
 let soundOn = true;
