@@ -91,30 +91,13 @@
 
     <!-- Tab: Live -->
     <div class="tab-content active" id="tab-live">
-      ... (iframe content)
-    </div>
-
-    <!-- Tab: Monitor (sensors + live attack alerts) -->
-    <div class="tab-content" id="tab-monitor" style="display:none">
-      <div class="monitor-grid">
-        <div class="monitor-stats">
-          <div class="stat-card" style="background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
-            <div id="mon-total" style="font-size:28px;font-family:var(--m);color:var(--accent)">0</div>
-            <div style="font-size:9px;color:var(--text-muted)">Alerts</div>
-          </div>
-          <div class="stat-card" style="background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
-            <div id="mon-ips" style="font-size:28px;font-family:var(--m);color:var(--green)">0</div>
-            <div style="font-size:9px;color:var(--text-muted)">Unique IPs</div>
-          </div>
-        </div>
-        <div id="monitor-feed" class="monitor-feed">
-          <div style="text-align:center;padding:40px;color:var(--text-muted)">📡 Sensors active — waiting for traffic...</div>
-        </div>
-        <div style="text-align:center;padding:8px">
-          <button id="btn-sound" class="btn" style="background:var(--bg-card);border:1px solid var(--border)" onclick="toggleSound()">🔊 Sound ON</button>
-        </div>
+      <!-- Nav bar for iframe -->
+      <div class="iframe-nav" id="iframe-nav">
+        <button id="nav-back" class="nav-btn" title="Back">←</button>
+        <button id="nav-fwd" class="nav-btn" title="Forward">→</button>
+        <button id="nav-reload" class="nav-btn" title="Reload">↻</button>
+        <input id="nav-url" class="nav-url" placeholder="Page URL" spellcheck="false">
       </div>
-    </div>
       <div class="iframe-container">
         <div class="iframe-placeholder" id="iframe-placeholder">
           <div class="placeholder-icon">◈</div>
@@ -126,6 +109,28 @@
         </div>
         <iframe id="target-frame" src="" style="display:none"
                 sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+      </div>
+    </div>
+
+    <!-- Tab: Monitor (live sensor alerts) -->
+    <div class="tab-content" id="tab-monitor" style="display:none">
+      <div style="display:flex;height:100%;flex-direction:column;overflow:hidden">
+        <div style="display:flex;gap:8px;padding:8px;flex-shrink:0">
+          <div style="flex:1;background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
+            <div id="mon-total" style="font-size:28px;font-family:monospace;color:var(--accent)">0</div>
+            <div style="font-size:9px;color:var(--text-muted)">Alerts</div>
+          </div>
+          <div style="flex:1;background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
+            <div id="mon-ips" style="font-size:28px;font-family:monospace;color:var(--green)">0</div>
+            <div style="font-size:9px;color:var(--text-muted)">Unique IPs</div>
+          </div>
+        </div>
+        <div id="monitor-feed" style="flex:1;overflow-y:auto;padding:8px">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">📡 Sensors active — traffic will appear here</div>
+        </div>
+        <div style="text-align:center;padding:6px;flex-shrink:0">
+          <button id="btn-sound" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-primary);padding:4px 14px;border-radius:3px;cursor:pointer;font-size:11px">🔊 Sound ON</button>
+        </div>
       </div>
     </div>
 

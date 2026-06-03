@@ -1,3 +1,4 @@
+import json
 """Dashboard Blueprint: página principal + API de estado + escaneo."""
 import time
 import threading
