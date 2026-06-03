@@ -257,7 +257,28 @@
     if (e.data.type === "cmd_toggle_mode") setMode(!STATE.selectMode);
     if (e.data.type === "cmd_scan") startScan();
     if (e.data.type === "cmd_clear_selection") clearAll();
+    if (e.data.type === "cmd_load_elements") loadExternalElements(e.data.elements || []);
   });
+
+  // ── LOAD EXTERNAL ELEMENTS (from crawler) ───────────────────
+  function loadExternalElements(elements) {
+    STATE.targets = [];
+    elements.forEach(info => {
+      // Find the actual DOM element by selector
+      try {
+        const el = document.querySelector(info.selector);
+        if (el) {
+          STATE.targets.push({ el, info });
+        } else {
+          // Store info only, no DOM reference
+          STATE.targets.push({ el: null, info });
+        }
+      } catch (_) {
+        STATE.targets.push({ el: null, info });
+      }
+    });
+    notify();
+  }
 
   // ── CLEAR ALL ──────────────────────────────────────────────
   function clearAll() {

@@ -109,13 +109,54 @@ document.addEventListener("DOMContentLoaded", () => {
     els.frame?.contentWindow?.postMessage({ type: "cmd_scan" }, "*");
   });
 
-  // ── CLEAR SELECTION ──────────────────────────────────────
-  els.clearSel?.addEventListener("click", () => {
-    els.frame?.contentWindow?.postMessage({ type: "cmd_clear_selection" }, "*");
-    if (els.selCount) els.selCount.textContent = "0";
-    if (els.elemList) els.elemList.innerHTML = '<div class="elements-empty">Use SELECT MODE on the target page to pick elements.</div>';
-    if (els.clearSel) els.clearSel.style.display = "none";
-    if (els.btnScan) els.btnScan.disabled = true;
+  // ── AUTO-DETECT (crawler) ─────────────────────────────────
+  $("btn-autodetect")?.addEventListener("click", async () => {
+    const url = els.targetUrl?.value?.trim();
+    if (!url) return alert("Enter a target URL first");
+    const target = url.startsWith("http") ? url : "http://" + url;
+    $("btn-autodetect").textContent = "⋯ Crawling";
+    try {
+      const r = await fetch("/api/crawl", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: target }) });
+      const d = await r.json();
+      if (d.elements?.length) {
+        // Send to iframe selector
+        els.frame?.contentWindow?.postMessage({ type: "cmd_load_elements", elements: d.elements }, "*");
+        alert(`Found ${d.count} elements. Switch to SELECT MODE to review.`);
+      }
+    } catch (_) { alert("Crawl failed"); }
+    $("btn-autodetect").textContent = "🕷 Auto-detect inputs";
+  });
+
+  // ── SAST ───────────────────────────────────────────────────
+  $("btn-sast")?.addEventListener("click", async () => {
+    const path = prompt("Project path to analyze (e.g., ../pagina-testing):", "../pagina-testing");
+    if (!path) return;
+    $("btn-sast").textContent = "⋯ Analyzing";
+    try {
+      const r = await fetch("/api/sast", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+      const d = await r.json();
+      switchTab("sessions"); // show in sessions tab
+      alert(`${d.count} vulnerabilities found in source code. Check console for details.`);
+      console.table(d.findings?.slice(0, 20) || []);
+      // Show brief summary in results panel
+      if (d.findings?.length) {
+        const summary = d.findings.slice(0, 10).map(f => `L${f.line}: [${f.severity}] ${f.category}`).join("\n");
+        if (els.resultsList) els.resultsList.innerHTML = `<pre style="font-size:10px;padding:8px;white-space:pre-wrap">${summary}</pre>`;
+      }
+    } catch (_) { alert("SAST failed"); }
+    $("btn-sast").textContent = "🔍 Analyze source code";
+  });
+
+  // ── EXPORT ──────────────────────────────────────────────────
+  $("btn-export")?.addEventListener("click", async () => {
+    try {
+      const r = await fetch("/api/sessions"), d = await r.json();
+      const blob = new Blob([JSON.stringify(d, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "striker-report-" + new Date().toISOString().slice(0, 10) + ".json";
+      a.click();
+    } catch (_) { alert("Export failed"); }
   });
 
   // ── HELP ─────────────────────────────────────────────────

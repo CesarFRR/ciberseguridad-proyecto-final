@@ -22,8 +22,8 @@ def _categories_for_element(tag, etype, info):
     cats = []
     tag = tag.lower()
     if tag in ("input", "textarea"):
-        if etype in ("text", "email", "search", "", None):
-            cats.extend(["sqli", "xss", "nosqli"])
+        if etype in ("text", "email", "search", "url", "", None):
+            cats.extend(["sqli", "xss", "nosqli", "ssrf"])
         elif etype == "password":
             cats.extend(["sqli", "nosqli"])
     elif tag == "select":
@@ -32,6 +32,7 @@ def _categories_for_element(tag, etype, info):
         cats.extend(["xss", "sqli"])
     if info.get("formAction"):
         cats.append("sqli")
+        cats.append("ssrf")
     return list(set(cats))
 
 

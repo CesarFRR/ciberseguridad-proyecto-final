@@ -139,7 +139,7 @@ def api_clear_sessions():
 def api_payloads():
     """Devuelve todos los payloads agrupados por categoría."""
     from scanner.engine import load_payloads
-    cats = ["sqli", "xss", "nosqli", "cmd"]
+    cats = ["sqli", "xss", "nosqli", "cmd", "ssrf", "xxe"]
     result = {}
     for c in cats:
         result[c] = load_payloads(c)

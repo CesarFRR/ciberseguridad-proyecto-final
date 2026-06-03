@@ -66,6 +66,11 @@
       <button id="btn-select-mode" class="btn btn-select">☗ SELECT MODE</button>
       <button id="btn-scan" class="btn btn-scan" disabled>▶ SCAN</button>
       <button id="btn-clear-sel" class="btn btn-clear-sel" style="display:none">✕ Clear selection</button>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+        <button id="btn-autodetect" class="btn" style="background:var(--bg-card);border:1px solid var(--border);color:var(--accent);font-size:9px;padding:4px 8px;text-align:center">🕷 Auto-detect inputs</button>
+        <button id="btn-sast" class="btn" style="background:var(--bg-card);border:1px solid var(--border);color:var(--accent);font-size:9px;padding:4px 8px;text-align:center">🔍 Analyze source code</button>
+        <button id="btn-export" class="btn" style="background:var(--bg-card);border:1px solid var(--border);color:var(--green);font-size:9px;padding:4px 8px;text-align:center">📥 Export results (JSON)</button>
+      </div>
     </div>
 
     <!-- Sessions list -->
