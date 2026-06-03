@@ -211,7 +211,16 @@ function loadTarget() {
   if (els.systemText) els.systemText.textContent = "PROXYING";
   if (els.systemDot) { els.systemDot.className = "status-dot"; els.systemDot.style.background = "#3b82f6"; }
 
-  const proxyUrl = "/proxy?target=" + encodeURIComponent(target);
+  // Separar base URL del path
+  let proxyUrl;
+  try {
+    const parsed = new URL(target);
+    const base = parsed.origin;
+    const path = parsed.pathname + parsed.search;
+    proxyUrl = "/proxy?target=" + encodeURIComponent(base) + "&path=" + encodeURIComponent(path);
+  } catch(_) {
+    proxyUrl = "/proxy?target=" + encodeURIComponent(target);
+  }
   if (els.frame) { els.frame.src = proxyUrl; els.frame.style.display = "block"; }
   if (els.placeholder) els.placeholder.style.display = "none";
   // Update nav URL bar
