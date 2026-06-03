@@ -1,0 +1,121 @@
+{
+  "attacks": {
+    "SQL Injection": {
+      "mitre": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-89",
+      "cwe_name": "Neutralización Incorrecta de Elementos Especiales en Comandos SQL",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante inserta comandos SQL maliciosos en campos de entrada (login, búsqueda, formularios). Si la aplicación concatena directamente el input del usuario en consultas SQL sin sanitizar, el atacante puede leer, modificar o eliminar datos de la base de datos, e incluso ejecutar comandos en el servidor.",
+      "remediation": "Usa consultas parametrizadas (prepared statements):\n  cursor.execute('SELECT * FROM users WHERE id=%s', (user_id,))\n\nNunca concatenes strings del usuario en consultas SQL.\nUsa un ORM como SQLAlchemy que escape parámetros automáticamente.\nValida y sanitiza todo input con allowlists (regex para IDs, emails, etc.).",
+      "indicators": "Errores de base de datos en la respuesta (MySQL, PostgreSQL, SQLite, Oracle).\nComportamiento inesperado al insertar comillas simples o dobles.\nHTTP 500 con mensajes de error de SQL.",
+      "impact": "Crítico — Acceso completo a la base de datos, robo de credenciales, modificación de datos, eliminación de tablas."
+    },
+    "NoSQL Injection": {
+      "mitre": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-943",
+      "cwe_name": "Neutralización Incorrecta de Elementos Especiales en Lógica de Consulta",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "Similar a SQLi pero en bases de datos NoSQL (MongoDB, Redis, Cassandra). El atacante usa operadores como $gt, $ne, $where, $regex para manipular consultas y saltarse la autenticación o extraer datos sin conocer las credenciales.",
+      "remediation": "Valida y sanitiza todo input antes de pasarlo a la base de datos.\nUsa un validador de esquema JSON (jsonschema) para verificar la estructura del input.\nNunca permitas que el usuario envíe operadores de MongoDB directamente.\nConvierte el input a strings simples antes de la consulta.",
+      "indicators": "Errores de MongoDB (MongoError, CastError, BSONTypeError).\nLogin exitoso sin credenciales válidas.\nHTTP 500 al enviar objetos JSON con operadores.",
+      "impact": "Crítico — Bypass de autenticación, acceso a datos sensibles, denegación de servicio."
+    },
+    "Cross-Site Scripting (XSS)": {
+      "mitre": "T1059.007",
+      "mitre_name": "JavaScript",
+      "tactic": "Execution",
+      "cwe": "CWE-79",
+      "cwe_name": "Neutralización Incorrecta de Input Durante la Generación de Páginas Web",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante inyecta código JavaScript malicioso que se ejecuta en el navegador de otros usuarios. Puede robar cookies de sesión, redirigir a sitios falsos, modificar el contenido de la página o capturar credenciales mediante keyloggers.",
+      "remediation": "Escapa todo output antes de renderizarlo en HTML:\n  from markupsafe import escape\n  return escape(user_input)\n\nNUNCA uses | safe en plantillas Jinja2 con datos del usuario.\nImplementa Content-Security-Policy (CSP) para limitar scripts inline.\nUsa HttpOnly en cookies de sesión para evitar robo vía XSS.",
+      "indicators": "El payload de prueba aparece reflejado en la respuesta HTML sin cambios.\nCampos de búsqueda, comentarios o mensajes muestran código HTML/JS del usuario.\nLa página ejecuta alert() al insertar <script>alert(1)</script>.",
+      "impact": "Alto — Robo de sesiones, phishing, defacement, keyloggers, redirección maliciosa."
+    },
+    "Command Injection": {
+      "mitre": "T1059.004",
+      "mitre_name": "Unix Shell",
+      "tactic": "Execution",
+      "cwe": "CWE-77",
+      "cwe_name": "Neutralización Incorrecta de Elementos Especiales en un Comando",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante inyecta comandos del sistema operativo (ls, whoami, cat /etc/passwd, wget) en campos que la aplicación pasa a funciones como subprocess, os.system o exec(). Esto permite ejecución remota de código en el servidor.",
+      "remediation": "NUNCA uses shell=True en subprocess:\n  subprocess.run(['ping', '-c', '2', host], timeout=5)\n\nValida el input con una allowlist estricta (regex para IPs, hostnames, números).\nUsa shlex.quote() si es inevitable pasar a shell.\nEscapa o rechaza caracteres especiales: ; | & $ \\` \\n",
+      "indicators": "Respuesta contiene output de comandos del sistema (root:x:0:0:, uid=, Linux).\nLa página muestra contenido de /etc/passwd o salida de whoami.\nErrores del shell en la respuesta (sh: command not found).",
+      "impact": "Crítico — Ejecución remota de código, acceso al sistema de archivos, shell reversa, robo de datos del servidor."
+    },
+    "Path Traversal": {
+      "mitre": "T1005",
+      "mitre_name": "Data from Local System",
+      "tactic": "Collection",
+      "cwe": "CWE-22",
+      "cwe_name": "Limitación Incorrecta de un Pathname a un Directorio Restringido",
+      "owasp": "A01",
+      "owasp_name": "Broken Access Control",
+      "description": "El atacante usa secuencias como ../../../ para navegar fuera del directorio web y leer archivos del sistema (/etc/passwd, /etc/shadow, archivos de configuración). También puede acceder a código fuente y credenciales almacenadas.",
+      "remediation": "Usa os.path.basename() para eliminar componentes de directorio:\n  safe = os.path.basename(user_filename)\n  path = os.path.join('/directorio/seguro', safe)\n\nValida que la ruta final esté dentro del directorio permitido con os.path.realpath().\nUsa una whitelist de archivos permitidos en vez de aceptar rutas arbitrarias.",
+      "indicators": "Respuesta contiene contenido de /etc/passwd, /etc/shadow o archivos del sistema.\nLa aplicación devuelve archivos fuera del directorio web esperado.\nHTTP 200 con contenido de archivos del sistema.",
+      "impact": "Alto — Lectura de archivos sensibles, credenciales, código fuente, configuración del sistema."
+    },
+    "File Inclusion (LFI/RFI)": {
+      "mitre": "T1190",
+      "mitre_name": "Exploit Public-Facing Application",
+      "tactic": "Initial Access",
+      "cwe": "CWE-98",
+      "cwe_name": "Control Incorrecto del Nombre de Archivo para Include/Require",
+      "owasp": "A03",
+      "owasp_name": "Injection",
+      "description": "El atacante fuerza a la aplicación a incluir archivos locales (LFI) o remotos (RFI). LFI permite leer archivos del servidor. RFI permite ejecutar código desde un servidor externo controlado por el atacante.",
+      "remediation": "Nunca uses include/require con input del usuario.\nUsa un mapeo fijo (whitelist) de páginas permitidas.\nDeshabilita allow_url_include y allow_url_fopen en PHP.\nValida el input contra una lista cerrada de archivos permitidos.",
+      "indicators": "La URL contiene ?file=, ?page=, ?include= con rutas externas.\nRespuesta incluye contenido de archivos del servidor.\nSe ejecuta código de un servidor remoto en la respuesta.",
+      "impact": "Crítico — Ejecución remota de código, lectura de archivos, compromiso total del servidor."
+    },
+    "Scanner / Recon": {
+      "mitre": "T1595",
+      "mitre_name": "Active Scanning",
+      "tactic": "Reconnaissance",
+      "cwe": null,
+      "cwe_name": null,
+      "owasp": "A05",
+      "owasp_name": "Security Misconfiguration",
+      "description": "Herramientas automatizadas (nmap, nikto, sqlmap, gobuster) escanean la aplicación en busca de endpoints vulnerables, archivos sensibles (.env, .git), paneles de administración expuestos y configuraciones incorrectas.",
+      "remediation": "Bloquea el acceso a archivos sensibles desde el servidor web (.env, .git, .htaccess).\nConfigura robots.txt para disuadir escaneos (aunque no los detiene).\nUsa fail2ban para bloquear IPs que escanean múltiples rutas.\nDeshabilita directory listing.\nOculta versiones de software en headers HTTP.",
+      "indicators": "Requests a /.env, /.git/HEAD, /wp-admin, /phpmyadmin.\nUser-Agents de herramientas de escaneo (nmap, nikto, sqlmap).\nMúltiples requests secuenciales a endpoints inexistentes.",
+      "impact": "Medio — Exposición de archivos sensibles, mapeo de la aplicación para futuros ataques."
+    },
+    "Brute Force": {
+      "mitre": "T1110",
+      "mitre_name": "Brute Force",
+      "tactic": "Credential Access",
+      "cwe": "CWE-307",
+      "cwe_name": "Restricción Incorrecta de Intentos Excesivos de Autenticación",
+      "owasp": "A07",
+      "owasp_name": "Identification and Authentication Failures",
+      "description": "El atacante prueba múltiples combinaciones de usuario/contraseña hasta encontrar credenciales válidas. Sin rate limiting, un atacante puede probar miles de contraseñas por segundo usando diccionarios.",
+      "remediation": "Implementa rate limiting (máximo 5 intentos por minuto por IP/usuario).\nBloquea la cuenta temporalmente después de N fallos consecutivos.\nUsa CAPTCHA después de varios intentos fallidos.\nImplementa autenticación multifactor (MFA/2FA).\nHash de contraseñas con bcrypt/argon2, nunca en texto plano.",
+      "indicators": "Múltiples POST a /login con diferentes credenciales desde la misma IP.\nAlta frecuencia de requests en corto tiempo.\nPatrones de diccionario en los parámetros.",
+      "impact": "Alto — Compromiso de cuentas, acceso no autorizado, robo de datos."
+    },
+    "DDoS / High Rate": {
+      "mitre": "T1498",
+      "mitre_name": "Network Denial of Service",
+      "tactic": "Impact",
+      "cwe": "CWE-770",
+      "cwe_name": "Asignación de Recursos sin Límites o Throttling",
+      "owasp": "A05",
+      "owasp_name": "Security Misconfiguration",
+      "description": "El atacante satura el servidor con una cantidad masiva de requests, agotando recursos (CPU, memoria, ancho de banda) y dejando la aplicación inaccesible para usuarios legítimos.",
+      "remediation": "Implementa rate limiting por IP a nivel de aplicación y servidor web.\nUsa un CDN/WAF (Cloudflare, AWS Shield) para absorber tráfico malicioso.\nConfigura límites de conexión en nginx/apache.\nMonitorea patrones de tráfico para detectar anomalías.\nEscala horizontalmente con load balancers.",
+      "indicators": "Más de 50 requests en 10 segundos desde la misma IP.\nAumento súbito del tráfico.\nLatencia elevada y timeouts en el servidor.",
+      "impact": "Crítico — Denegación de servicio, pérdida de disponibilidad, impacto económico."
+    }
+  }
+}

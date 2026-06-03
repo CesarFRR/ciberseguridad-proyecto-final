@@ -8,8 +8,10 @@ const $ = (id) => document.getElementById(id);
 const els = {};
 let selectModeOn = false;
 let mitreMap = {};
+let attacksData = {};
 
 async function loadMitre(){try{const r=await fetch("/api/mitre");mitreMap=(await r.json()).mappings||{}}catch(_){}}
+async function loadAttacks(){try{const r=await fetch("/api/attacks");attacksData=(await r.json()).attacks||{}}catch(_){}}
 
 // ── Init ─────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,12 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (navFwd) navFwd.addEventListener("click", () => els.frame?.contentWindow?.history?.forward());
   if (navReload) navReload.addEventListener("click", () => { if (els.frame) els.frame.src = els.frame.src; });
   if (navUrl) navUrl.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault();
       let u = navUrl.value.trim();
+      if (!u) return;
       if (!u.startsWith("http")) u = "http://" + u;
       // Update the iframe via proxy
       const proxyUrl = "/proxy?target=" + encodeURIComponent(u);
-      if (els.frame) els.frame.src = proxyUrl;
+      if (els.frame) { els.frame.src = proxyUrl; }
+      navUrl.blur();  // quitar foco del input
     }
   });
 
@@ -137,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ── Load sessions ─────────────────────────────────────────
   loadSessions();
   loadMitre();
+  loadAttacks();
   setInterval(loadSessions, 5000);
   startMonitorSSE();
 
@@ -251,56 +257,40 @@ function renderResults(results) {
 
 // ── Detail Modal ──────────────────────────────────────────────
 const CATEGORY_MAP = {
-  "sqli": "SQL Injection",
-  "xss": "Cross-Site Scripting (XSS)",
-  "nosqli": "NoSQL Injection",
-  "cmdi": "Command Injection",
-  "pathtrav": "Path Traversal",
-  "lfi": "File Inclusion (LFI/RFI)",
-  "rfi": "File Inclusion (LFI/RFI)",
-  "scanner": "Scanner / Recon",
-  "brute": "Brute Force",
-  "http": "HTTP Anomaly",
+  "sqli": "SQL Injection", "xss": "Cross-Site Scripting (XSS)",
+  "nosqli": "NoSQL Injection", "cmdi": "Command Injection",
+  "pathtrav": "Path Traversal", "lfi": "File Inclusion (LFI/RFI)",
+  "rfi": "File Inclusion (LFI/RFI)", "scanner": "Scanner / Recon",
+  "brute": "Brute Force", "http": "HTTP Anomaly",
 };
 
 function showDetail(r) {
   const catName = CATEGORY_MAP[r.category] || r.category || r.type || "?";
   const m = mitreMap[catName] || {};
+  const a = attacksData[catName] || {};
   const sc = {critical:"#ef4444",high:"#f97316",medium:"#f59e0b",low:"#3b82f6"};
 
   const set = (id, v) => { const el = $(id); if (el) el.textContent = v || "—"; };
+
   set("detail-sev", (r.severity||"").toUpperCase());
   set("detail-type", catName);
   set("detail-element", r.element);
   set("detail-evidence", r.evidence);
-  set("detail-mitre", m.mitre_id ? `${m.mitre_id} · ${m.mitre_name}` : "—");
-  set("detail-tactic", m.tactic);
-  set("detail-cwe", m.cwe ? `${m.cwe} · ${m.cwe_name}` : "—");
-  set("detail-owasp", m.owasp ? `${m.owasp} · ${m.owasp_name}` : "—");
-  set("detail-desc", m.description);
-
-  // Remediation
-  const fixes = {
-    "SQL Injection": "Use parameterized queries:\ncursor.execute('SELECT * FROM users WHERE id=%s', (user_id,))\nNever concatenate strings into SQL.",
-    "Cross-Site Scripting (XSS)": "Escape output before rendering:\nfrom markupsafe import escape\nreturn escape(user_input)\nRemove | safe from Jinja templates.",
-    "NoSQL Injection": "Validate JSON input before passing to MongoDB. Use a schema validator. Never use $where with raw user input.",
-    "Command Injection": "Never use shell=True:\nsubprocess.run(['cmd', arg], timeout=5)\nValidate input with allowlist regex.",
-    "Path Traversal": "Use os.path.basename() to strip paths:\nsafe = os.path.join('/safe', os.path.basename(name))\nNever open() raw user filenames.",
-    "Scanner / Recon": "Block common probe paths. Set up fail2ban. Disable directory listing. Hide .env/.git files.",
-    "Brute Force": "Rate limit logins (5/min). Lock account after N failures. Use CAPTCHA. Hash passwords with bcrypt.",
-    "HTTP Anomaly": "Enforce HTTPS. Set HSTS header. Use CSP and X-Frame-Options headers.",
-  };
-  const fix = fixes[catName] || "Review input validation and use security best practices for this endpoint.";
-  set("detail-fix", fix);
+  set("detail-mitre", a.mitre ? `${a.mitre} · ${a.mitre_name}` : (m.mitre_id ? `${m.mitre_id} · ${m.mitre_name}` : "—"));
+  set("detail-tactic", a.tactic || m.tactic || "—");
+  set("detail-cwe", a.cwe ? `${a.cwe} · ${a.cwe_name}` : (m.cwe ? `${m.cwe} · ${m.cwe_name}` : "—"));
+  set("detail-owasp", a.owasp ? `${a.owasp} · ${a.owasp_name}` : (m.owasp ? `${m.owasp} · ${m.owasp_name}` : "—"));
+  set("detail-desc", a.description || m.description || "Sin descripción disponible.");
+  set("detail-indicators", a.indicators || "");
+  set("detail-impact", a.impact || "");
+  set("detail-fix", a.remediation || "Revisa la validación de inputs y aplica buenas prácticas de seguridad.");
 
   const sevEl = $("detail-sev");
   if (sevEl) sevEl.style.color = sc[r.severity] || "#3b82f6";
 
-  // Close handlers
   const modal = $("detail-modal");
   $("detail-close").onclick = () => modal.style.display = "none";
   modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
-
   modal.style.display = "flex";
 }
 

@@ -158,6 +158,17 @@ def api_mitre():
         return jsonify(json.load(f))
 
 
+@dashboard_bp.route("/api/attacks", methods=["GET"])
+def api_attacks():
+    """Devuelve la base de datos de ataques con descripciones y remediación."""
+    from scanner.engine import PAYLOADS_DIR
+    path = PAYLOADS_DIR / "attacks.json"
+    if not path.exists():
+        return jsonify({"error": "not found"}), 404
+    with open(path) as f:
+        return jsonify(json.load(f))
+
+
 # ═══════════════════════════════════════════════════════════════════
 #  SENSORES (live attack monitoring)
 # ═══════════════════════════════════════════════════════════════════
