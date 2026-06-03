@@ -138,11 +138,11 @@
     <!-- Tab: DDoS -->
     <div class="tab-content" id="tab-ddos" style="display:none">
       <div style="display:flex;height:100%;flex-direction:column;overflow:hidden;padding:16px">
-        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-          <input id="ddos-url" placeholder="http://localhost:5005/ddos/api" style="flex:1;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:monospace;font-size:11px">
-          <input id="ddos-threads" value="20" type="number" min="1" max="500" style="width:60px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center" title="Threads">
-          <input id="ddos-duration" value="10" type="number" min="1" max="120" style="width:50px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center" title="Seconds">
-          <button id="btn-ddos-start" class="btn btn-scan" style="padding:8px 16px">💣 START</button>
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:end">
+          <div style="flex:1"><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Target URL</small><br><input id="ddos-url" placeholder="http://localhost:5005/ddos/api" style="width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:monospace;font-size:11px;margin-top:3px"></div>
+          <div><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Hilos</small><br><input id="ddos-threads" value="20" type="number" min="1" max="500" style="width:70px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center;margin-top:3px"></div>
+          <div><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Segundos</small><br><input id="ddos-duration" value="10" type="number" min="1" max="120" style="width:70px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center;margin-top:3px"></div>
+          <button id="btn-ddos-start" class="btn btn-scan" style="padding:8px 16px;height:34px">💣 INICIAR</button>
           <button id="btn-ddos-stop" class="btn" style="background:var(--danger);color:white;padding:8px 16px;display:none">⏹ STOP</button>
         </div>
         <div style="display:flex;gap:12px;margin-bottom:12px">
