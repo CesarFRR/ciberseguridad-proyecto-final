@@ -103,48 +103,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ── SCAN ─────────────────────────────────────────────────
-  let autoDetectSession = null; // track if elements came from auto-detect
-  els.btnScan?.addEventListener("click", async () => {
+  els.btnScan?.addEventListener("click", () => {
     els.btnScan.textContent = "⋯ Scanning"; els.btnScan.disabled = true;
+    // Limpiar resultados anteriores
     if (els.resultsList) els.resultsList.innerHTML = '<div class="elements-empty">Scanning…</div>';
-
-    if (autoDetectSession) {
-      // Scan directo — elementos vinieron de auto-detect
-      try {
-        const r = await fetch("/api/scan", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id: autoDetectSession }),
-        });
-        const d = await r.json();
-        if (d.status === "scanning") pollScanResults(autoDetectSession);
-      } catch (_) {
-        els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false;
-      }
-    } else {
-      // Scan via iframe selector
-      els.frame?.contentWindow?.postMessage({ type: "cmd_scan" }, "*");
-      setTimeout(() => { els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false; }, 15000);
-    }
+    els.frame?.contentWindow?.postMessage({ type: "cmd_scan" }, "*");
   });
-
-  async function pollScanResults(sid) {
-    for (let i = 0; i < 40; i++) {
-      await new Promise(r => setTimeout(r, 1000));
-      try {
-        const r = await fetch("/api/scan/" + sid + "/status"), d = await r.json();
-        if (d.scan_status === "done" || d.scan_status === "error") {
-          els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false;
-          if (els.systemText) els.systemText.textContent = (d.result_count || 0) > 0 ? "VULNERABLE" : "CLEAN";
-          if (els.systemDot) els.systemDot.className = (d.result_count || 0) > 0 ? "status-dot red" : "status-dot green";
-          renderResults(d.results || []);
-          addLog("scan", (d.results||[]).length + " vulns found", els.targetUrl?.value || "", d.results || []);
-          loadSessions();
-          return;
-        }
-      } catch (_) { return; }
-    }
-    els.btnScan.textContent = "▶ SCAN"; els.btnScan.disabled = false;
-  }
 
   // ── AUTO-DETECT (crawler) ─────────────────────────────────
   $("btn-autodetect")?.addEventListener("click", async () => {
@@ -162,7 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
           body: JSON.stringify({ elements: d.elements }),
         });
         const td = await tr.json();
-        autoDetectSession = td.session_id;  // guardar para scan directo
         // Mostrar en el panel derecho
         renderElements(d.elements);
         if (els.selCount) els.selCount.textContent = d.count;
@@ -358,7 +321,6 @@ function loadTarget() {
 
   // Reset button states
   selectModeOn = false;
-  autoDetectSession = null;
   if (els.btnSelect) { els.btnSelect.textContent = "☗ SELECT MODE"; els.btnSelect.classList.remove("active"); }
   if (els.btnScan) { els.btnScan.disabled = true; els.btnScan.textContent = "▶ SCAN"; }
   if (els.selCount) els.selCount.textContent = "0";
