@@ -1,0 +1,28 @@
+<aside class="sidebar">
+  <div class="sidebar-title">Target <button id="help-inline" class="help-inline" title="How to use">?</button></div>
+  <div class="target-row">
+    <input type="text" id="target-url" class="target-input" placeholder="http://localhost:5005">
+    <button id="btn-load" class="btn btn-primary">▸ LOAD</button>
+  </div>
+
+  <div class="sidebar-title" style="margin-top:14px">Controls</div>
+  <div class="controls-row">
+    <button id="btn-select-mode" class="btn btn-select">☗ SELECT MODE</button>
+    <button id="btn-scan" class="btn btn-scan" disabled>▶ SCAN</button>
+    <button id="btn-clear-sel" class="btn btn-clear-sel" style="display:none">✕ Clear selection</button>
+  </div>
+
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+    <button id="btn-autodetect" class="btn btn-util">🕷 Auto-detect inputs</button>
+    <button id="btn-sast" class="btn btn-util">🔍 Analyze source code</button>
+    <button id="btn-export" class="btn btn-util" style="color:var(--green)">📥 Export results (JSON)</button>
+  </div>
+
+  <div class="sidebar-title" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+    <span>Sessions</span>
+    <button id="btn-clear-sessions" class="btn-clear" title="Clear all">🗑</button>
+  </div>
+  <div id="sessions-list" class="sessions-list">
+    <div class="sessions-empty">No sessions yet.</div>
+  </div>
+</aside>

@@ -1,0 +1,102 @@
+<main class="content">
+  <div class="content-header">
+    <div class="tab-bar">
+      <button class="tab active" data-tab="live">Live View</button>
+      <button class="tab" data-tab="monitor">📡 Monitor</button>
+      <button class="tab" data-tab="ddos">💣 DDoS</button>
+      <button class="tab" data-tab="logs">📜 Logs</button>
+      <button class="tab" data-tab="sessions">Sessions</button>
+      <button class="tab tab-elements" data-tab="elements">Elements</button>
+    </div>
+  </div>
+
+  <!-- Live -->
+  <div class="tab-content active" id="tab-live">
+    <div class="iframe-nav" id="iframe-nav">
+      <button id="nav-back" class="nav-btn" title="Back">←</button>
+      <button id="nav-fwd" class="nav-btn" title="Forward">→</button>
+      <button id="nav-reload" class="nav-btn" title="Reload">↻</button>
+      <input id="nav-url" class="nav-url" placeholder="Page URL" spellcheck="false">
+    </div>
+    <div class="iframe-container">
+      <div class="iframe-placeholder" id="iframe-placeholder">
+        <div class="placeholder-icon">◈</div>
+        <div class="placeholder-title">Striker DAST</div>
+        <div class="placeholder-text">Enter a target URL and click <strong>LOAD</strong>.<br>The page will load here with Striker controls.</div>
+      </div>
+      <iframe id="target-frame" src="" style="display:none" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+    </div>
+  </div>
+
+  <!-- Monitor -->
+  <div class="tab-content" id="tab-monitor" style="display:none">
+    <div style="display:flex;height:100%;flex-direction:column;overflow:hidden">
+      <div style="display:flex;gap:8px;padding:8px;flex-shrink:0">
+        <div style="flex:1;background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
+          <div id="mon-total" style="font-size:28px;font-family:monospace;color:var(--accent)">0</div>
+          <div style="font-size:9px;color:var(--text-muted)">Alerts</div>
+        </div>
+        <div style="flex:1;background:var(--bg-card);padding:10px;border-radius:4px;text-align:center">
+          <div id="mon-ips" style="font-size:28px;font-family:monospace;color:var(--green)">0</div>
+          <div style="font-size:9px;color:var(--text-muted)">Unique IPs</div>
+        </div>
+      </div>
+      <div id="monitor-feed" style="flex:1;overflow-y:auto;padding:8px">
+        <div style="text-align:center;padding:40px;color:var(--text-muted)">📡 Sensors active — traffic will appear here</div>
+      </div>
+      <div style="text-align:center;padding:6px;flex-shrink:0">
+        <button id="btn-sound" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:4px 14px;border-radius:3px;cursor:pointer;font-size:11px">🔊 Sound ON</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DDoS -->
+  <div class="tab-content" id="tab-ddos" style="display:none">
+    <div style="display:flex;height:100%;flex-direction:column;overflow:hidden;padding:16px">
+      <div style="display:flex;gap:8px;margin-bottom:12px;align-items:end">
+        <div style="flex:1"><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Target URL</small><br><input id="ddos-url" placeholder="http://localhost:5005/ddos/api" style="width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-family:monospace;font-size:11px;margin-top:3px"></div>
+        <div><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Hilos</small><br><input id="ddos-threads" value="20" type="number" min="1" max="500" style="width:70px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center;margin-top:3px"></div>
+        <div><small style="color:var(--text-muted);font-size:9px;text-transform:uppercase;letter-spacing:.05em">Segundos</small><br><input id="ddos-duration" value="10" type="number" min="1" max="120" style="width:70px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:4px;font-size:11px;text-align:center;margin-top:3px"></div>
+        <button id="btn-ddos-start" class="btn btn-scan" style="padding:8px 16px;height:34px">💣 INICIAR</button>
+        <button id="btn-ddos-stop" class="btn" style="background:var(--danger);color:white;padding:8px 16px;display:none">⏹ STOP</button>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center"><div id="ddos-rps" style="font-size:36px;font-family:monospace;color:var(--accent)">0</div><div style="font-size:9px;color:var(--text-muted)">Requests/sec</div></div>
+        <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center"><div id="ddos-total" style="font-size:36px;font-family:monospace;color:var(--green)">0</div><div style="font-size:9px;color:var(--text-muted)">Total Requests</div></div>
+        <div style="flex:1;background:var(--bg-card);padding:12px;border-radius:4px;text-align:center"><div id="ddos-errors" style="font-size:36px;font-family:monospace;color:var(--danger)">0</div><div style="font-size:9px;color:var(--text-muted)">Errors</div></div>
+      </div>
+      <div style="flex:1;overflow-y:auto;font-family:monospace;font-size:10px;color:var(--text-muted)" id="ddos-log"><div style="text-align:center;padding:40px">Configure URL and click START to simulate DDoS</div></div>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  <div class="tab-content" id="tab-logs" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <span style="font-size:10px;color:var(--text-muted)">Historial de actividad</span>
+      <button id="btn-clear-logs" class="btn" style="background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.2);font-size:9px;padding:3px 8px">🗑 Clear Logs</button>
+    </div>
+    <div class="scroll" id="logs-table"><div class="empt">No activity yet.</div></div>
+  </div>
+
+  <!-- Sessions -->
+  <div class="tab-content" id="tab-sessions" style="display:none">
+    <div id="sessions-table" class="sessions-table"><div class="empt">No scan sessions yet.</div></div>
+  </div>
+
+  <!-- Elements -->
+  <div class="tab-content" id="tab-elements" style="display:none">
+    <div class="tab-elements-grid">
+      <div class="tab-elem-box">
+        <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Selected Elements</span>
+          <span id="selection-count-tab" class="sel-count">0</span>
+        </div>
+        <div id="elements-list-tab"><div class="elements-empty">Use SELECT MODE on the target page to pick elements.</div></div>
+      </div>
+      <div class="tab-elem-box">
+        <div class="panel-title">Scan Results</div>
+        <div id="results-list-tab"><div class="elements-empty">Run a scan to see results.</div></div>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,23 @@
+<div id="detail-modal" class="detail-modal" style="display:none">
+  <div class="detail-content">
+    <div class="detail-hdr">
+      <span id="detail-sev"></span>
+      <span id="detail-type" style="font-weight:600"></span>
+      <span id="detail-close" style="margin-left:auto;cursor:pointer;font-size:20px">&times;</span>
+    </div>
+    <div class="detail-body">
+      <div><b>Elemento:</b> <span id="detail-element"></span></div>
+      <div><b>Evidencia:</b> <span id="detail-evidence"></span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0;background:var(--bg-card);padding:10px;border-radius:4px;border:1px solid var(--border)">
+        <div><small style="color:var(--text-muted)">MITRE ATT&amp;CK</small><br><span id="detail-mitre" style="font-family:monospace;font-size:11px"></span></div>
+        <div><small style="color:var(--text-muted)">Táctica</small><br><span id="detail-tactic"></span></div>
+        <div><small style="color:var(--text-muted)">CWE</small><br><span id="detail-cwe" style="font-family:monospace;font-size:11px"></span></div>
+        <div><small style="color:var(--text-muted)">OWASP Top 10</small><br><span id="detail-owasp" style="font-family:monospace;font-size:11px"></span></div>
+      </div>
+      <div style="margin:10px 0"><b>Descripción</b><p id="detail-desc" style="font-size:11px;color:var(--text-secondary);margin:4px 0;line-height:1.6"></p></div>
+      <div style="margin:10px 0"><b>Indicadores</b><p id="detail-indicators" style="font-size:11px;color:var(--text-secondary);margin:4px 0;line-height:1.6;white-space:pre-line"></p></div>
+      <div style="margin:10px 0"><b>Impacto</b><p id="detail-impact" style="font-size:11px;color:var(--danger);margin:4px 0;font-weight:500"></p></div>
+      <div style="margin:10px 0"><b>Cómo defenderte</b><pre id="detail-fix" style="font-size:10px;background:var(--bg-card);padding:10px;border-radius:4px;margin-top:4px;white-space:pre-wrap;border:1px solid var(--border);color:var(--text-primary);line-height:1.5"></pre></div>
+    </div>
+  </div>
+</div>
